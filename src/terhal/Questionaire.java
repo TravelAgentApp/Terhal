@@ -19,7 +19,7 @@ hotelId: HotelId;
 activityId: ActivityId;
 restaurantId: RestaurantId;
  - Weather: String
-         -TravelDuration: date
+TravelDuration: date
  - budget: float
          - user: User
                  - questions: List<String>
