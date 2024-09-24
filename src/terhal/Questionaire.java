@@ -15,9 +15,9 @@ int members;
 int TravelPurpose;
 TravelPlan travelPlan; 
 FlightId flightId;
-hotelId: HotelId
-activityId: ActivityId 
-                 - restaurantId: RestaurantId
+hotelId: HotelId;
+activityId: ActivityId;
+restaurantId: RestaurantId;
  - Weather: String
          -TravelDuration: date
  - budget: float
