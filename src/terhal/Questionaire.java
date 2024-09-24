@@ -14,7 +14,7 @@ public class Questionaire {
 int members;
 int TravelPurpose;
 TravelPlan travelPlan; 
-         - flightId: FlightId
+FlightId flightId;
  - hotelId: HotelId
          - activityId: ActivityId 
                  - restaurantId: RestaurantId
