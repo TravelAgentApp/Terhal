@@ -1,28 +1,35 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
+
 package terhal;
+
+import java.util.List;
 
 /**
  *
  * @author janaz
  */
 public class Questionaire {
- String questionId; 
- int members; 
-int members;
-int TravelPurpose;
-TravelPlan travelPlan; 
-FlightId flightId;
-hotelId: HotelId;
-activityId: ActivityId;
-restaurantId: RestaurantId;
- - Weather: String
-TravelDuration: date
- - budget: float
-         - user: User
-                 - questions: List<String>
- - countries: Countries
-         - responses: List<String>
+    /*
+    Activity  =new Activity();
+    Hotel  =new Hotel();
+    Flight  =new Flight();
+    User  =new User();
+    */
+    
+    String questionId; 
+    int members ; 
+    //int members ;
+    int TravelPurpose;
+    TravelPlan travelPlan; 
+    FlightId flightId ;
+    HotelId hotelId ;
+    ActivityId activityId ;
+    RestaurantId restaurantId;
+    String Weather;
+    //date TravelDuration;
+    String TravelDuration;
+    float budget ;
+    User user ;
+    List<String> questions;
+    Countries countries ;
+    List<String> responses;
 }
