@@ -17,17 +17,16 @@ public class Questionaire {
     
     String questionId; 
     int members ; 
-    //int members ;
     int TravelPurpose;
     TravelPlan travelPlan; 
-    FlightId flightId ;
-    HotelId hotelId ;
-    ActivityId activityId ;
-    RestaurantId restaurantId;
+    int FlightId ;
+    int HotelId ;
+    int ActivityId;
+    int RestaurantId;
     String Weather;
     //date TravelDuration;
     String TravelDuration;
-    float budget ;
+    float budget;
     User user ;
     List<String> questions;
     Countries countries ;
