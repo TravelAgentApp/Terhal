@@ -47,7 +47,7 @@ public class TravelAppGUI extends JFrame {
 
         initComponents();
     }
-
+//
     private void initComponents() {
         JPanel panel = new JPanel();
         panel.setLayout(new GridLayout(6, 2));
