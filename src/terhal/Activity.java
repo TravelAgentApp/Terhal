@@ -8,7 +8,7 @@ package terhal;
  class Activity {
     private int activityId; // Primary key
     private String name; // Name of the activity
-    private String location; // Location of the activity
+    private String location; // Location ID of the activity
     private String purpose; // Purpose of the activity
     private String activityConstraints; // Any constraints related to the activity
     private String bestTimeToGo; // Best time to engage in the activity
