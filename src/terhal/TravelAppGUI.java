@@ -1,156 +1,193 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
+
 package terhal;
-
-/**
- *
- * @author janaz
- */
-//package com.mycompany.travelappgui;
-
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.UUID;
+import java.util.HashMap;
+import java.util.Map;
 
-public class TravelAppGUI extends JFrame {
-    private User currentUser;
-    private JTextField nameField;
-    private JTextField emailField;
-    private JRadioButton loginButton;
-    private JRadioButton registerButton;
+public class TravelAppGUI {
 
-    private Connection conn; // Use the existing connection from NetBeans
+    private static final Map<String, User> users = new HashMap<>();
+    private static User currentUser;
+    private static Questionaire questions = new Questionaire();
+   // private static TravelPlan travel ;
+        //private static boolean mainInfoCompleted = false;
 
-    public TravelAppGUI(Connection connection) {
-        this.conn = connection; // Assign the provided connection from your NetBeans setup
 
-        setTitle("Travel App");
-        setSize(400, 300);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
 
-        initComponents();
+    public static void main(String[] args) {
+        
+        SwingUtilities.invokeLater(TravelAppGUI::showLoginOrRegister);  
     }
 
-    private void initComponents() {
-        JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(7, 2));
+    private static void showLoginOrRegister() {
+        JFrame frame = new JFrame("Login or Register");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(350, 200);
+        frame.setLayout(new GridLayout(2, 1));
 
-        JLabel nameLabel = new JLabel("Name:");
-        nameField = new JTextField();
-        JLabel emailLabel = new JLabel("Email:");
-        emailField = new JTextField();
+        JButton loginButton = new JButton("Login");
+        JButton registerButton = new JButton("Register");
 
-        // Radio buttons for login or register
-        loginButton = new JRadioButton("Login");
-        registerButton = new JRadioButton("Register");
+        loginButton.setFont(new Font("Arial", Font.BOLD, 16));
+        registerButton.setFont(new Font("Arial", Font.BOLD, 16));
 
-        // Group the radio buttons
-        ButtonGroup group = new ButtonGroup();
-        group.add(loginButton);
-        group.add(registerButton);
+        loginButton.addActionListener(e -> showLogin());
+        registerButton.addActionListener(e -> showRegister());
 
-        JButton submitButton = new JButton("Submit");
-        submitButton.addActionListener(new SubmitActionListener());
-
-        panel.add(nameLabel);
-        panel.add(nameField);
-        panel.add(emailLabel);
-        panel.add(emailField);
-        panel.add(loginButton);
-        panel.add(registerButton);
-        panel.add(new JLabel()); // Empty cell
-        panel.add(submitButton);
-
-        add(panel);
+        frame.add(loginButton);
+        frame.add(registerButton);
+        frame.setVisible(true);
     }
-
-    private class SubmitActionListener implements ActionListener {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            String name = nameField.getText();
-            String email = emailField.getText();
-
-            if (loginButton.isSelected()) {
-                // Handle login logic
-                handleLogin(name, email);
-            } else if (registerButton.isSelected()) {
-                // Handle register logic
-                handleRegister(name, email);
-            } else {
-                JOptionPane.showMessageDialog(null, "Please select either Login or Register.");
-            }
-        }
-    }
-
-    // Handle user login
-    private void handleLogin(String name, String email) {
-        String query = "SELECT * FROM Users WHERE name = ? AND email = ?";
-        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
-            pstmt.setString(1, name);
-            pstmt.setString(2, email);
-
-            ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
-                // Successful login
-                JOptionPane.showMessageDialog(null, "Login successful!");
-                currentUser = new User();
-                currentUser.setUserId(rs.getString("userId"));
-                currentUser.setName(rs.getString("name"));
-                currentUser.setEmail(rs.getString("email"));
-            } else {
-                // Invalid credentials
-                JOptionPane.showMessageDialog(null, "Invalid name or email.");
-            }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    // Handle user registration
-    private void handleRegister(String name, String email) {
-        // First check if the email already exists
-        String checkQuery = "SELECT * FROM Users WHERE email = ?";
-        try (PreparedStatement checkStmt = conn.prepareStatement(checkQuery)) {
-            checkStmt.setString(1, email);
-            ResultSet rs = checkStmt.executeQuery();
-            if (rs.next()) {
-                // Email already exists
-                JOptionPane.showMessageDialog(null, "Email already registered.");
-            } else {
-                // Register the new user
-                registerNewUser(name, email);
-            }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    // Register a new user
-    private void registerNewUser(String name, String email) {
-        String query = "INSERT INTO Users (userId, name, email) VALUES (?, ?, ?)";
-        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
-            String userId = UUID.randomUUID().toString(); // Generate unique userId
-
-            pstmt.setString(1, userId);
-            pstmt.setString(2, name);
-            pstmt.setString(3, email);
-
-            pstmt.executeUpdate();
-            JOptionPane.showMessageDialog(null, "Registration successful!");
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
-    }
-}
-
     
+    private static void showLogin() {
+        JFrame frame = new JFrame("Login");
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setSize(350, 300);
+        frame.setLayout(new GridLayout(5, 2));
+
+        JLabel userLabel = new JLabel("Username:");
+        JTextField userField = new JTextField(10);
+        JLabel emailLabel = new JLabel("Email:");
+        JTextField emailField = new JTextField(10);
+        JLabel passwordLabel = new JLabel("Password:");
+        JPasswordField passwordField = new JPasswordField(10);
+        JButton submitButton = new JButton("Submit");
+        submitButton.setBackground(new Color(144, 238, 144)); // أخضر فاتح
+        submitButton.setForeground(Color.BLACK);
+        submitButton.setFont(new Font("Arial", Font.BOLD, 16));
+
+        submitButton.addActionListener(e -> {
+            String username = userField.getText().trim();
+            String email = emailField.getText().trim();
+            String password = new String(passwordField.getPassword());
+
+            // تحقق من تعبئة الحقول
+            if (username.isEmpty() || email.isEmpty() || password.isEmpty()) {
+                JOptionPane.showMessageDialog(frame, "Please fill in all fields.", "Input Error", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            // تحقق من وجود المستخدم
+            if (!users.containsKey(username)) {
+                JOptionPane.showMessageDialog(frame, "User does not exist. Please register first.", "Login Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // تحقق من صحة بيانات الدخول
+            if (!isValidEmailFormat(email)) {
+                JOptionPane.showMessageDialog(frame, "Invalid email format. Please enter a valid email address.", "Login Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // تحقق من صحة بيانات الدخول
+            if (!username.matches("[a-zA-Z]+")) {
+                JOptionPane.showMessageDialog(frame, "Username should contain only alphabetic characters.", "Login Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            // تحقق من صحة بيانات الدخول
+            if (validateLogin(username, email, password)) {
+                currentUser = users.get(username); // الحصول على المستخدم
+                frame.dispose();
+                showMainInfo();
+                //travel = new TravelPlan(currentUser, questions);
+                //showTravelPlan();
+            } else {
+                JOptionPane.showMessageDialog(frame, "Invalid login credentials.", "Login Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        frame.add(userLabel);
+        frame.add(userField);
+        frame.add(emailLabel);
+        frame.add(emailField);
+        frame.add(passwordLabel);
+        frame.add(passwordField);
+        frame.add(new JLabel()); 
+        frame.add(submitButton);
+        frame.setVisible(true);
+    }
+        
+    private static void showRegister() {
+    JFrame frame = new JFrame("Register");
+    frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+    frame.setSize(350, 300);
+    frame.setLayout(new GridLayout(5, 2));
+
+    JLabel userLabel = new JLabel("Username:");
+    JTextField userField = new JTextField(10);
+    JLabel emailLabel = new JLabel("Email:");
+    JTextField emailField = new JTextField(10);
+    JLabel passwordLabel = new JLabel("Password:");
+    JPasswordField passwordField = new JPasswordField(10);
+    JButton submitButton = new JButton("Submit");
+
+    submitButton.setBackground(new Color(144, 238, 144));
+    submitButton.setForeground(Color.BLACK);
+    submitButton.setFont(new Font("Arial", Font.BOLD, 16));
+
+    submitButton.addActionListener(e -> {
+        String username = userField.getText().trim();
+        String email = emailField.getText().trim();
+        String password = new String(passwordField.getPassword());
+
+        if (username.isEmpty() || email.isEmpty() || password.isEmpty()) {
+            JOptionPane.showMessageDialog(frame, "Please fill in all fields.", "Input Error", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        if (!isValidEmailFormat(email)) {
+            JOptionPane.showMessageDialog(frame, "Invalid email format. Please enter a valid email address.", "Registration Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        if (users.values().stream().anyMatch(user -> user.getEmail().equals(email))) {
+            JOptionPane.showMessageDialog(frame, "Email already registered.", "Registration Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        if (!username.matches("[a-zA-Z]+")) {
+            JOptionPane.showMessageDialog(frame, "Username should contain only alphabetic characters.", "Registration Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        users.put(username, new User(username, email, password, 0, 0, 0, ""));
+        JOptionPane.showMessageDialog(frame, "Registration successful! You can now log in.", "Registration Success", JOptionPane.INFORMATION_MESSAGE);
+        frame.dispose();
+    });
+
+        frame.add(userLabel);
+        frame.add(userField);
+        frame.add(emailLabel);
+        frame.add(emailField);
+        frame.add(passwordLabel);
+        frame.add(passwordField);
+        frame.add(new JLabel()); 
+        frame.add(submitButton);
+        frame.setVisible(true);
+                
+    }
+    
+        private static void showMainInfo() {
+        questions.showMainInfo();
+          //mainInfoCompleted = true;
+  
+    }
+
+    private static boolean validateLogin(String username, String email, String password) {
+        User user = users.get(username);
+        return user != null && user.getEmail().equals(email) && user.getPassword().equals(password);
+    }
+    
+    // Validate email format
+    private static boolean isValidEmailFormat(String email) {
+        return email.endsWith("hotmail.com") || email.endsWith("gmail.com");
+    }
+    
+//       private static void showTravelPlan() {
+//        if (mainInfoCompleted && currentUser != null) {
+//            travel.showTravelPlan();
+//        }
+//    
+//    }
+}
