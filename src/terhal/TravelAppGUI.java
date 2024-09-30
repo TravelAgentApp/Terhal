@@ -20,6 +20,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.UUID;
+import java.util.List;
 
 public class TravelAppGUI extends JFrame {
     private User currentUser;
@@ -39,6 +40,8 @@ public class TravelAppGUI extends JFrame {
         setLocationRelativeTo(null);
 
         initComponents();
+        
+       
     }
 
     private void initComponents() {
@@ -61,7 +64,7 @@ public class TravelAppGUI extends JFrame {
 
         JButton submitButton = new JButton("Submit");
         submitButton.addActionListener(new SubmitActionListener());
-
+        
         panel.add(nameLabel);
         panel.add(nameField);
         panel.add(emailLabel);
@@ -83,9 +86,11 @@ public class TravelAppGUI extends JFrame {
             if (loginButton.isSelected()) {
                 // Handle login logic
                 handleLogin(name, email);
+                displayAvailableCountries();
             } else if (registerButton.isSelected()) {
                 // Handle register logic
                 handleRegister(name, email);
+                displayAvailableCountries();
             } else {
                 JOptionPane.showMessageDialog(null, "Please select either Login or Register.");
             }
@@ -151,6 +156,25 @@ public class TravelAppGUI extends JFrame {
             ex.printStackTrace();
         }
     }
+    
+    private void displayAvailableCountries() {
+    Countries country = new Countries(conn); // Create Country object with DB connection
+    double budgetforflight = 100; // For example, 80% of the trip's budget
+    String weatherPreference = "cold"; // Example weather preference
+    String activityPreference = "Hiking"; // Example activity preference
+
+    // Get the list of countries
+    List<String> availableCountries = country.selectCountry(budgetforflight, weatherPreference, activityPreference);
+
+    // Display the countries
+    if (!availableCountries.isEmpty()) {
+        for (String countryName : availableCountries) {
+            System.out.println("Available Country: " + countryName);
+        }
+    } else {
+        System.out.println("No countries available for the selected preferences.");
+    }
+}
 }
 
     
