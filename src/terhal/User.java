@@ -1,63 +1,51 @@
 
 package terhal;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
-
-/**
- *
- * @author s4ooo
- */
 public class User {
-    private String userId; // Primary key, unique identifier
-    private String Name;
+    private String username;
     private String email;
-    private String passwordHash; // To store hashed password
-    private LocalDateTime createdAt; // Timestamp of when the user was created
+    private String password; 
+    private double budget;
+    private int numberOfTravelers;
+    private int travelDuration;
+    private String travelPurpose;
 
-    public User() {
-        this.userId = UUID.randomUUID().toString();
+    public User(String username, String email, String password, double budget, int numberOfTravelers, int travelDuration, String travelPurpose) {
+        this.username = username;
+        this.email = email;
+        this.password = password; 
+        this.budget = budget;
+        this.numberOfTravelers = numberOfTravelers;
+        this.travelDuration = travelDuration;
+        this.travelPurpose = travelPurpose;
     }
 
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-
-    public String getName() {
-        return Name;
-    }
-
-    public void setName(String Name) {
-        this.Name = Name;
+    // Getters and Setters
+    public String getUsername() {
+        return username;
     }
 
     public String getEmail() {
         return email;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public String getPassword() {
+        return password; 
     }
 
-    public String getPasswordHash() {
-        return passwordHash;
+    public double getBudget() {
+        return budget;
     }
 
-    public void setPasswordHash(String passwordHash) {
-        this.passwordHash = passwordHash;
+    public int getNumberOfTravelers() {
+        return numberOfTravelers;
     }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
+    public int getTravelDuration() {
+        return travelDuration;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
+    public String getTravelPurpose() {
+        return travelPurpose;
     }
-
-    
 }
