@@ -1,6 +1,7 @@
 
 package terhal;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -8,137 +9,123 @@ import java.util.List;
  * @author janaz
  */
 public class Questionaire {
-    /*
-    Activity  =new Activity();
-    Hotel  =new Hotel();
-    Flight  =new Flight();
-    User  =new User();
-    */
-    
-    String questionId; 
-    int members ; 
-    int TravelPurpose;
-    TravelPlan travelPlan; 
-    int FlightId ;
-    int HotelId ;
-    int ActivityId;
-    int RestaurantId;
-    String Weather;
-    String TravelDuration;
-    float budget;
-    User user ;
-    //List<String> questions;
-    Countries countries ;
-    //List<String> responses;
-    
-    public Questionaire () {
-        
+    private int tripId; // Primary key
+    private String userId; // Foreign key referencing User
+    private String purpose; // Purpose of the trip
+    private LocalDate durationStart; // Start date of the trip
+    private LocalDate durationEnd; // End date of the trip
+    private double budget; // Budget for the trip
+    private int destination; // Foreign key referencing Country
+    private int numMembers; // Number of members traveling
+    private String weatherPreference; // Weather preference for the trip
+    private String activityPreference; // Activity preferences
+    private String cuisinePreference; // Cuisine preferences
+    private String hotelPreference; // Hotel preference
+    private String flightPreference; // Flight preference
+
+    public int getTripId() {
+        return tripId;
     }
 
-    public String getQuestionId() {
-        return questionId;
+    public void setTripId(int tripId) {
+        this.tripId = tripId;
     }
 
-    public void setQuestionId(String questionId) {
-        this.questionId = questionId;
+    public String getUserId() {
+        return userId;
     }
 
-    public int getMembers() {
-        return members;
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
-    public void setMembers(int members) {
-        this.members = members;
+    public String getPurpose() {
+        return purpose;
     }
 
-    public int getTravelPurpose() {
-        return TravelPurpose;
+    public void setPurpose(String purpose) {
+        this.purpose = purpose;
     }
 
-    public void setTravelPurpose(int TravelPurpose) {
-        this.TravelPurpose = TravelPurpose;
+    public LocalDate getDurationStart() {
+        return durationStart;
     }
 
-    public TravelPlan getTravelPlan() {
-        return travelPlan;
+    public void setDurationStart(LocalDate durationStart) {
+        this.durationStart = durationStart;
     }
 
-    public void setTravelPlan(TravelPlan travelPlan) {
-        this.travelPlan = travelPlan;
+    public LocalDate getDurationEnd() {
+        return durationEnd;
     }
 
-    public int getFlightId() {
-        return FlightId;
+    public void setDurationEnd(LocalDate durationEnd) {
+        this.durationEnd = durationEnd;
     }
 
-    public void setFlightId(int FlightId) {
-        this.FlightId = FlightId;
-    }
-
-    public int getHotelId() {
-        return HotelId;
-    }
-
-    public void setHotelId(int HotelId) {
-        this.HotelId = HotelId;
-    }
-
-    public int getActivityId() {
-        return ActivityId;
-    }
-
-    public void setActivityId(int ActivityId) {
-        this.ActivityId = ActivityId;
-    }
-
-    public int getRestaurantId() {
-        return RestaurantId;
-    }
-
-    public void setRestaurantId(int RestaurantId) {
-        this.RestaurantId = RestaurantId;
-    }
-
-    public String getWeather() {
-        return Weather;
-    }
-
-    public void setWeather(String Weather) {
-        this.Weather = Weather;
-    }
-
-    public String getTravelDuration() {
-        return TravelDuration;
-    }
-
-    public void setTravelDuration(String TravelDuration) {
-        this.TravelDuration = TravelDuration;
-    }
-
-    public float getBudget() {
+    public double getBudget() {
         return budget;
     }
 
-    public void setBudget(float budget) {
+    public void setBudget(double budget) {
         this.budget = budget;
     }
 
-    public User getUser() {
-        return user;
+    public int getDestination() {
+        return destination;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public void setDestination(int destination) {
+        this.destination = destination;
     }
 
-    public Countries getCountries() {
-        return countries;
+    public int getNumMembers() {
+        return numMembers;
     }
 
-    public void setCountries(Countries countries) {
-        this.countries = countries;
+    public void setNumMembers(int numMembers) {
+        this.numMembers = numMembers;
     }
 
-  
+    public String getWeatherPreference() {
+        return weatherPreference;
+    }
+
+    public void setWeatherPreference(String weatherPreference) {
+        this.weatherPreference = weatherPreference;
+    }
+
+    public String getActivityPreference() {
+        return activityPreference;
+    }
+
+    public void setActivityPreference(String activityPreference) {
+        this.activityPreference = activityPreference;
+    }
+
+    public String getCuisinePreference() {
+        return cuisinePreference;
+    }
+
+    public void setCuisinePreference(String cuisinePreference) {
+        this.cuisinePreference = cuisinePreference;
+    }
+
+    public String getHotelPreference() {
+        return hotelPreference;
+    }
+
+    public void setHotelPreference(String hotelPreference) {
+        this.hotelPreference = hotelPreference;
+    }
+
+    public String getFlightPreference() {
+        return flightPreference;
+    }
+
+    public void setFlightPreference(String flightPreference) {
+        this.flightPreference = flightPreference;
+    }
+
     
 }

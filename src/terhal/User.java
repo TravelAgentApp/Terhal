@@ -1,6 +1,7 @@
 
 package terhal;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
@@ -8,20 +9,16 @@ import java.util.UUID;
  * @author s4ooo
  */
 public class User {
-    private String userId;
-    private String name;
+    private String userId; // Primary key, unique identifier
+    private String Name;
     private String email;
-    private String preferences;
-    private String travelPlan;
-    private float budget;
-    private Questionaire UserQuestionaire;
-    //private List<TravelPlan> travelHistory;
+    private String passwordHash; // To store hashed password
+    private LocalDateTime createdAt; // Timestamp of when the user was created
 
     public User() {
         this.userId = UUID.randomUUID().toString();
     }
 
-    
     public String getUserId() {
         return userId;
     }
@@ -31,11 +28,11 @@ public class User {
     }
 
     public String getName() {
-        return name;
+        return Name;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setName(String Name) {
+        this.Name = Name;
     }
 
     public String getEmail() {
@@ -46,37 +43,21 @@ public class User {
         this.email = email;
     }
 
-    public String getPreferences() {
-        return preferences;
+    public String getPasswordHash() {
+        return passwordHash;
     }
 
-    public void setPreferences(String preferences) {
-        this.preferences = preferences;
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
     }
 
-    public String getTravelPlan() {
-        return travelPlan;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
-    public void setTravelPlan(String travelPlan) {
-        this.travelPlan = travelPlan;
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 
-    public float getBudget() {
-        return budget;
-    }
-
-    public void setBudget(float budget) {
-        this.budget = budget;
-    }
-
-    public Questionaire getUserQuestionaire() {
-        return UserQuestionaire;
-    }
-
-    public void setUserQuestionaire(Questionaire UserQuestionaire) {
-        this.UserQuestionaire = UserQuestionaire;
-    }
-    
     
 }
