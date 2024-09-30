@@ -22,6 +22,10 @@ public class Questionaire {
     private String cuisinePreference; // Cuisine preferences
     private String hotelPreference; // Hotel preference
     private String flightPreference; // Flight preference
+    double flight_p;
+    double hotel_p;
+    double activity_p;
+    double restaurant_p;
 
     public int getTripId() {
         return tripId;
@@ -127,5 +131,32 @@ public class Questionaire {
         this.flightPreference = flightPreference;
     }
 
-    
+    void budgetSplit(String f, String h) {
+    // Ensure comparison is case-insensitive and correct the method calls
+    if (f.equalsIgnoreCase("standard") && h.equalsIgnoreCase("standard")) {
+        hotel_p = 0.25;
+        restaurant_p = 0.25;
+        activity_p = 0.25;
+        flight_p = 0.25;
+
+    } else if (f.equalsIgnoreCase("standard") && h.equalsIgnoreCase("luxury")) {
+        hotel_p = 0.40;
+        restaurant_p = 0.20;
+        activity_p = 0.20;
+        flight_p = 0.20;
+
+    } else if (f.equalsIgnoreCase("luxury") && h.equalsIgnoreCase("standard")) {
+        flight_p = 0.40;
+        restaurant_p = 0.20;
+        activity_p = 0.20;
+        hotel_p = 0.20;
+
+    } else if (f.equalsIgnoreCase("luxury") && h.equalsIgnoreCase("luxury")) {
+        flight_p = 0.40;
+        restaurant_p = 0.10;
+        activity_p = 0.10;
+        hotel_p = 0.40;
+    }
+}
+
 }
