@@ -3,7 +3,7 @@ package terhal;
 
 /**
  *
- * @author s4ooo
+ * @author s4oo
  */
 class Flight {
    private int flightId; // Primary key
