@@ -423,11 +423,11 @@ public class Questionaire {
         // Set the frame visible
         frame.setVisible(true);
     }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            Questionaire q = new Questionaire();
-            q.showMainInfo();
-        });
-    }
+//    public static void main(String[] args) {
+//           SwingUtilities.invokeLater(() -> {
+//               Questionaire q = new Questionaire();
+//              q.showMainInfo();
+//           });
+//       }
 }
+

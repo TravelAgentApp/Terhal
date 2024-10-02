@@ -1,63 +1,44 @@
 
+
 package terhal;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
 
-/**
- *
- * @author s4ooo
- */
+
 public class User {
-    private String userId; // Primary key, unique identifier
-    private String Name;
-    private String email;
-    private String passwordHash; // To store hashed password
-    private LocalDateTime createdAt; // Timestamp of when the user was created
+    private String userId;   // معرف المستخدم الفريد
+    private String name;     // الاسم الكامل للمستخدم
+    private String email;    // عنوان البريد الإلكتروني للمستخدم
+    private String username;  // اسم المستخدم لتسجيل الدخول
+    private String password;  // كلمة مرور المستخدم
 
-    public User() {
-        this.userId = UUID.randomUUID().toString();
+    // المُنشئ
+    public User(String userId, String name, String email, String username, String password) {
+        this.userId = userId;
+        this.name = name;
+        this.email = email;
+        this.username = username;
+        this.password = password;
     }
 
+    // الدوال المساعدة (Getters)
     public String getUserId() {
         return userId;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-
     public String getName() {
-        return Name;
-    }
-
-    public void setName(String Name) {
-        this.Name = Name;
+        return name;
     }
 
     public String getEmail() {
         return email;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public String getUsername() {
+        return username;
     }
 
-    public String getPasswordHash() {
-        return passwordHash;
+    public String getPassword() {
+        return password;
     }
-
-    public void setPasswordHash(String passwordHash) {
-        this.passwordHash = passwordHash;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    
 }
+
