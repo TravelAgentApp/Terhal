@@ -1,51 +1,45 @@
 
 package terhal;
 
-public class User {
-    private String username;
-    private String email;
-    private String password; 
-    private double budget;
-    private int numberOfTravelers;
-    private int travelDuration;
-    private String travelPurpose;
 
-    public User(String username, String email, String password, double budget, int numberOfTravelers, int travelDuration, String travelPurpose) {
-        this.username = username;
+/**
+ *
+ * @author sahar
+ */
+
+
+public class User {
+    private String userId;   
+    private String name;     
+    private String email;    
+    private String username;  
+    private String password;  
+
+    public User(String userId, String name, String email, String username, String password) {
+        this.userId = userId;
+        this.name = name;
         this.email = email;
-        this.password = password; 
-        this.budget = budget;
-        this.numberOfTravelers = numberOfTravelers;
-        this.travelDuration = travelDuration;
-        this.travelPurpose = travelPurpose;
+        this.username = username;
+        this.password = password;
     }
 
-    // Getters and Setters
-    public String getUsername() {
-        return username;
+    public String getUserId() {
+        return userId;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public String getEmail() {
         return email;
     }
 
+    public String getUsername() {
+        return username;
+    }
+
     public String getPassword() {
-        return password; 
-    }
-
-    public double getBudget() {
-        return budget;
-    }
-
-    public int getNumberOfTravelers() {
-        return numberOfTravelers;
-    }
-
-    public int getTravelDuration() {
-        return travelDuration;
-    }
-
-    public String getTravelPurpose() {
-        return travelPurpose;
+        return password;
     }
 }
