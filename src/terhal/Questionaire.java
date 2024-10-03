@@ -387,22 +387,21 @@ public class Questionaire {
     submitButton.setForeground(Color.WHITE); // White text color
 
     submitButton.addActionListener(e -> {
-        boolean isAnyEmpty = false;
+    boolean isAnyEmpty = false;
 
-        for (int i = 0; i < options.length; i++) {
-            if (options[i][0].equals(" ")) {
-                isAnyEmpty = true;
-                break;
-            }
+    for (int i = 0; i < preferenceCombos.length; i++) {
+        if (preferenceCombos[i].getSelectedItem().equals(" ")) {
+            isAnyEmpty = true;
+            break;
         }
+    }
 
-        // Check if any fields are empty before closing the frame
-        if (isAnyEmpty) {
-            JOptionPane.showMessageDialog(null, "Please select something for each question before submitting the form.");
-        } else {
-            frame.dispose();
-            // Call TravelPlan to show the travel plan
-        }
+    if (isAnyEmpty) {
+        JOptionPane.showMessageDialog(null, "Please select something for each question before submitting the form.");
+    } else {
+        frame.dispose();
+        // Call TravelPlan to show the travel plan
+    }
     });
         // Call to TravelPlan to show the travel plan
 
@@ -420,10 +419,10 @@ public class Questionaire {
     frame.setVisible(true);
 }
 
-//     public static void main(String[] args) {
-//        Questionaire q=new Questionaire();
-//        q.showMainInfo();
-//        
-//    }
+     public static void main(String[] args) {
+        Questionaire q=new Questionaire();
+        q.showMainInfo();
+        
+    }
 
 }
