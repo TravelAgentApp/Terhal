@@ -574,7 +574,7 @@ private void savePreferencesToDatabase() {
         pstmt.setString(6, flightPreference);
 
         pstmt.executeUpdate();
-        JOptionPane.showMessageDialog(null, "Preferences saved successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+        //JOptionPane.showMessageDialog(null, "Preferences saved successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
     } catch (SQLException e) {
         e.printStackTrace();
         JOptionPane.showMessageDialog(null, "Error saving preferences: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
