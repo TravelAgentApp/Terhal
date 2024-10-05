@@ -20,8 +20,9 @@ public static void main(String[] args) throws SQLException {
         // Assume the connection is automatically provided by NetBeans (verify with your NetBeans settings)
         Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/travel_app?useSSL=false&serverTimezone=UTC", "root", "Janajgsz2004");
 
-        SwingUtilities.invokeLater(() -> {
-            new TravelAppGUI(connection).setVisible(true);
+       SwingUtilities.invokeLater(() -> {
+            TravelAppGUI appGUI = new TravelAppGUI(connection);
+            appGUI.showLoginOrRegister();  // Start by showing login or register screen
         });
     }
 }

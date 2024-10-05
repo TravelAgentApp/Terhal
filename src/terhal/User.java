@@ -10,6 +10,7 @@ import java.util.UUID;
 public class User {
     private String userId; // Primary key, unique identifier
     private String Name;
+    private String Username;
     private String email;
     private String passwordHash; // To store hashed password
     private LocalDateTime createdAt; // Timestamp of when the user was created
@@ -18,6 +19,15 @@ public class User {
         this.userId = UUID.randomUUID().toString();
     }
 
+    public String getUsername() {
+        return Username;
+    }
+
+    public void setUsername(String Username) {
+        this.Username = Username;
+    }
+
+    
     public String getUserId() {
         return userId;
     }
