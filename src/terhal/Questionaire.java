@@ -1,8 +1,12 @@
 
 package terhal;
 
+
 import javax.swing.*;
 import java.awt.*;
+import java.time.LocalDate;
+import java.util.List;
+
 
 public class Questionaire {
     private String[] preferences = new String[4];
