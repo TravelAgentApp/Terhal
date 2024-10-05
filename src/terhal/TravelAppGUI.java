@@ -294,30 +294,11 @@ private void handleLogin(JFrame loginFrame, String username, String password, JF
         JOptionPane.showMessageDialog(frame, message, "Error", JOptionPane.ERROR_MESSAGE);
     }
     
-   private void showMainInfo() {
+    void showMainInfo() {
         // Launch the questionnaire to gather user preferences
         Questionaire Questionaire = new Questionaire(conn,currentUser.getUserId() );
         Questionaire.showMainInfo();
     }
     
-    private void displayAvailableCountries() {
-    Countries country = new Countries(conn); // Create Country object with DB connection
-    double budgetforflight = 100; // For example, 80% of the trip's budget
-    String weatherPreference = "cold"; // Example weather preference
-    String activityPreference = "Hiking"; // Example activity preference
-
-    // Get the list of countries
-    List<String> availableCountries = country.selectCountry(budgetforflight, weatherPreference, activityPreference);
-
-    // Display the countries
-    if (!availableCountries.isEmpty()) {
-        for (String countryName : availableCountries) {
-            System.out.println("Available Country: " + countryName);
-        }
-    } else {
-        System.out.println("No countries available for the selected preferences.");
-    }
 }
-}
-
     

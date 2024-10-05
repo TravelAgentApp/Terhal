@@ -18,14 +18,20 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 
 public class Questionaire {
+
+    static String getaActivityPreference() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
     // Class attributes to store user preferences
     private int tripId; // Primary key
     private String userId; // Foreign key referencing User
     private String purpose; // Purpose of the trip
     private LocalDate durationStart; // Start date of the trip
     private LocalDate durationEnd; // End date of the trip
-    private double minBudget; // Budget for the trip
-    private double maxBudget; 
+    private double minBudget = 0; // Budget for the trip
+    private double maxBudget = 0;
+    private double avgBudget;
+    private double flightBudget;
     private int destination; // Foreign key referencing Country
     private int numMembers; // Number of members traveling
     private String weatherPreference; // Weather preference for the trip
@@ -115,6 +121,28 @@ public class Questionaire {
     public void setFlightPreference(String flightPreference) {
         this.flightPreference = flightPreference;
     }
+
+    public double getAvgBudget() {
+        return avgBudget;
+    }
+
+    public double getFlightBudget() {
+        return flightBudget;
+    }
+
+    public String getWeatherPreference() {
+        return weatherPreference;
+    }
+
+    public String getActivityPreference() {
+        return activityPreference;
+    }
+
+    public String getFlightPreference() {
+        return flightPreference;
+    }
+    
+    
 
     // Method to show main info for user preferences
 public void showMainInfo() {
@@ -494,9 +522,16 @@ public void showMainInfo() {
         hotelPreference = (String) preferenceCombos[3].getSelectedItem(); // Hotel preference
         flightPreference = (String) preferenceCombos[4].getSelectedItem(); // Flight preference
         //country = (String) countryCombo.getSelectedItem(); // Selected country (if applicable)
-
+        
+        
+        
         // Save the user preferences to the database
         savePreferencesToDatabase();
+        
+        budgetSplit(flightPreference, hotelPreference);
+        calcAvgbudget (minBudget, maxBudget);
+        calcflightBudget( avgBudget, flight_p);
+        displayAvailableCountries();
 
         // Show confirmation dialog
         JOptionPane.showMessageDialog(frame, "Preferences saved successfully!");
@@ -614,6 +649,21 @@ private void savePreferencesToDatabase() {
         hotel_p = 0.40;
     }
 }
+   
+    double calcAvgbudget(double minBudget, double maxBudget){
+        if (minBudget == 0)
+            avgBudget = maxBudget;
+        else 
+           avgBudget= (minBudget + maxBudget)/2;
+       
+        return avgBudget;
+    };
+    
+    double calcflightBudget(double avgBudget, double flight_p) {
+     
+        flightBudget = avgBudget * flight_p;
+         return flightBudget;
+    }
     
     LocalDate StartDateParse (String travelday, String travelMonth, String travelYear){
         String stringDate= travelYear + "-" + travelMonth + "-" + travelday;
@@ -621,5 +671,26 @@ private void savePreferencesToDatabase() {
         
         return durationStart;
     }
+    
+    private void displayAvailableCountries() {
+    Countries country = new Countries(conn); // Create Country object with DB connection
+    
+    // Get the list of countries
+    //List<String> availableCountries = country.selectCountry(getFlightBudget(), getWeatherPreference(), getActivityPreference());
+    
+    //country.selectCountry(getFlightBudget(), getWeatherPreference(), getActivityPreference());
+    // Display the countries
+    
+    
+    List<String[]> availableCountries = country.selectCountry(getFlightBudget(), getWeatherPreference(), getActivityPreference());
 
+    // Display the country and city names
+    if (!availableCountries.isEmpty()) {
+        for (String[] pair : availableCountries) {
+            System.out.println("Available Country: " + pair[0] + ", City: " + pair[1]);
+        }
+    } else {
+        System.out.println("No countries available for the selected preferences.");
+    }
+}
 }
