@@ -208,11 +208,11 @@ public void showMainInfo() {
     // Days selection
    
     String[] days = new String[31];  // Set to 31 days
-for (int i = 0; i < 31; i++) {
-    if (i < 9) {
-        days[i] = "0" + (i + 1); // Leading zero for single-digit days (01-09)
-    } else {
-        days[i] = String.valueOf(i + 1); // Day 10 onwards
+    for (int i = 0; i < 31; i++) {
+        if (i < 9) {
+            days[i] = "0" + (i + 1); // Leading zero for single-digit days (01-09)
+    }   else {
+            days[i] = String.valueOf(i + 1); // Day 10 onwards
     }
 }
 
@@ -520,21 +520,31 @@ for (int i = 0; i < 31; i++) {
     }
 
     // Method to save user preferences to the database
-    private void savePreferencesToDatabase() {
-        String query = "INSERT INTO trips (weather_preference, activity_preference, cuisine_preference, hotel_preference, flight_preference) VALUES ( ?, ?, ?, ?, ?) WHERE userId = userId";
-        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
-            pstmt.setString(1, weatherPreference);
-            pstmt.setString(2, activityPreference);
-            pstmt.setString(3, cuisinePreference);
-            pstmt.setString(4, hotelPreference);
-            pstmt.setString(5, flightPreference);
-            pstmt.executeUpdate();
-            JOptionPane.showMessageDialog(null, "Preferences saved successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(null, "Error saving preferences: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-        }
+private void savePreferencesToDatabase() {
+    String query = "INSERT INTO trips (userId, weather_preference, activity_preference, cuisine_preference, hotel_preference, flight_preference) " +
+                   "VALUES (?, ?, ?, ?, ?, ?) " +
+                   "ON DUPLICATE KEY UPDATE " +
+                   "weather_preference = VALUES(weather_preference), " +
+                   "activity_preference = VALUES(activity_preference), " +
+                   "cuisine_preference = VALUES(cuisine_preference), " +
+                   "hotel_preference = VALUES(hotel_preference), " +
+                   "flight_preference = VALUES(flight_preference)";
+
+    try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+        pstmt.setString(1, userId);  // Use the userId from the currentUser object
+        pstmt.setString(2, weatherPreference);
+        pstmt.setString(3, activityPreference);
+        pstmt.setString(4, cuisinePreference);
+        pstmt.setString(5, hotelPreference);
+        pstmt.setString(6, flightPreference);
+
+        pstmt.executeUpdate();
+        JOptionPane.showMessageDialog(null, "Preferences saved successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+    } catch (SQLException e) {
+        e.printStackTrace();
+        JOptionPane.showMessageDialog(null, "Error saving preferences: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
     }
+}
 
 
        private void savePreferencesToDatabase1() {
