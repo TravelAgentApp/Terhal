@@ -406,7 +406,7 @@ public void showMainInfo() {
             "Preferred Weather:",
             "What hotel type do you prefer?",
             "What flight type do you prefer?",
-            "Do you have a specific country in mind?"
+            "Do you have a specific Destination to visit in Saudi Arabia?"
         };
 
         // Options for each question
@@ -442,15 +442,11 @@ public void showMainInfo() {
         }
 
         // Country list
-        JLabel countryLabel = new JLabel("Select Country:");
+        JLabel countryLabel = new JLabel("Select a City:");
         countryLabel.setForeground(Color.decode("#000080"));
-        JComboBox<String> countryCombo = new JComboBox<>(new String[] {
-        "Select", "Egypt", "Jordan", "UAE", "Saudi Arabia", "Morocco", "Tunisia",
-        "Lebanon", "Oman", "Qatar", "Bahrain", "Kuwait", "Iraq",
-        "Algeria", "Sudan", "Syria", "USA", "Canada", "UK", "France",
-        "Germany", "Italy", "Spain", "Australia", "Japan", "South Korea",
-        "Brazil", "India", "China", "Russia", "Mexico", "South Africa",
-        "New Zealand"
+        JComboBox<String> countryCombo = new JComboBox<>(new String[]  {
+    "Select", "Riyadh", "Jeddah", "Mecca", "Medina", "Dammam", "Khobar", "Tabuk", 
+    "Hail", "Abha", "Jizan", "Najran", "Al-Qassim", "Taif"
     });
 
         // Initially hide the country selection combo box
@@ -506,7 +502,7 @@ public void showMainInfo() {
 
         // Check if a country has been selected (if "Yes" was chosen for the specific country question)
         if ("Yes".equals(preferenceCombos[5].getSelectedItem()) && "Select".equals(countryCombo.getSelectedItem())) {
-            errorMessage.append("Select a country.\n");
+            errorMessage.append("Select a city.\n");
             validInput = false;
         }
 
@@ -686,11 +682,12 @@ private void savePreferencesToDatabase() {
 
     // Display the country and city names
     if (!availableCountries.isEmpty()) {
+        System.out.println("Here are some cities in Saudi Arabia that match your preferences:" );
         for (String[] pair : availableCountries) {
-            System.out.println("Available Country: " + pair[0] + ", City: " + pair[1]);
+            System.out.println(pair[1]);
         }
     } else {
-        System.out.println("No countries available for the selected preferences.");
+        System.out.println("No cities available for the selected preferences.");
     }
 }
 }
