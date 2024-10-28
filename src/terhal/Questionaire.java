@@ -16,6 +16,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.sql.ResultSet;
+import java.util.ArrayList;
 
 public class Questionaire {
 
@@ -33,6 +35,7 @@ public class Questionaire {
     private double avgBudget;
     private double flightBudget;
     private int destination; // Foreign key referencing Country
+    private String city;
     private int numMembers; // Number of members traveling
     private String weatherPreference; // Weather preference for the trip
     private String activityPreference; // Activity preferences
@@ -460,6 +463,8 @@ public void showMainInfo() {
             countryCombo.setVisible(isVisible);
             frame.revalidate();
             frame.repaint();
+            
+            city = (String) countryCombo.getSelectedItem();
         });
 
         // Add country selection components to the form
@@ -527,7 +532,7 @@ public void showMainInfo() {
         budgetSplit(flightPreference, hotelPreference);
         calcAvgbudget (minBudget, maxBudget);
         calcflightBudget( avgBudget, flight_p);
-        displayAvailableCountries();
+        saveCitiestoDB();
 
         // Show confirmation dialog
         JOptionPane.showMessageDialog(frame, "Preferences saved successfully!");
@@ -668,26 +673,94 @@ private void savePreferencesToDatabase() {
         return durationStart;
     }
     
-    private void displayAvailableCountries() {
-    Countries country = new Countries(conn); // Create Country object with DB connection
-    
-    // Get the list of countries
-    //List<String> availableCountries = country.selectCountry(getFlightBudget(), getWeatherPreference(), getActivityPreference());
-    
-    //country.selectCountry(getFlightBudget(), getWeatherPreference(), getActivityPreference());
-    // Display the countries
-    
-    
-    List<String[]> availableCountries = country.selectCountry(getFlightBudget(), getWeatherPreference(), getActivityPreference());
+// Method to save each country into the travel plan
+private void savetotravelplan(String userId, int tripId, int countryId, String city) {
+    String query = "INSERT INTO travelplan (userId, tripId, countryId, city) " +
+                   "VALUES (?, ?, ?, ? ) " +
+                   "ON DUPLICATE KEY UPDATE countryId = ?";
 
-    // Display the country and city names
-    if (!availableCountries.isEmpty()) {
-        System.out.println("Here are some cities in Saudi Arabia that match your preferences:" );
-        for (String[] pair : availableCountries) {
-            System.out.println(pair[1]);
-        }
-    } else {
-        System.out.println("No cities available for the selected preferences.");
+    try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+        pstmt.setString(1, userId);
+        pstmt.setInt(2, tripId);
+        pstmt.setInt(3, countryId);
+        pstmt.setInt(4, countryId); // For duplicate key update
+        pstmt.setString(5, city); // For duplicate key update
+
+        pstmt.executeUpdate();
+        System.out.println("Country suggestion saved for travel plan with tripId " + tripId + " and userId " + userId);
+    } catch (SQLException e) {
+        e.printStackTrace();
+        JOptionPane.showMessageDialog(null, "Error saving travel plan: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
     }
 }
+
+public int getTripIdByUserId(String userId) {
+    String query = "SELECT tripId FROM trips WHERE userId = ?";
+    int tripId = -1; // Default value if no tripId is found
+
+    try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+        pstmt.setString(1, userId); // Set the userId parameter
+        ResultSet rs = pstmt.executeQuery();
+
+        // Check if there's a result, and retrieve tripId
+        if (rs.next()) {
+            tripId = rs.getInt("tripId");
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+        JOptionPane.showMessageDialog(null, "Error retrieving trip ID: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+    }
+    return tripId; // Default value if no tripId is found
 }
+    public int[] getTravelPlanIDByUserId(String userId) {
+    String query = "SELECT planId FROM travelplans WHERE userId = ?";
+    int[] tvID = new int[100]; // Default value if no tripId is found
+
+    try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+        pstmt.setString(1, userId); // Set the userId parameter
+        ResultSet rs = pstmt.executeQuery();
+
+        // Check if there's a result, and retrieve tripId
+        int i=0;
+        while (rs.next()) {
+          tvID[i] = rs.getInt("planId");
+          i++;
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+        JOptionPane.showMessageDialog(null, "Error retrieving trip ID: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+    }
+
+    return tvID; // Return the found tripId or -1 if none found
+}
+    
+   private void saveCitiestoDB() {// save cities to travelplan
+    Countries country = new Countries(conn); // Create Country object with DB connection
+
+    // Get the list of available countries and cities
+    List<String[]> availableCountries = country.selectCountry(getFlightBudget(), getWeatherPreference(), getActivityPreference());
+    
+    // Display the country and city names, and save each to the travel plan
+    if (!availableCountries.isEmpty()) {
+        System.out.println("Here are some cities in Saudi Arabia that match your preferences:");
+        for (String[] pair : availableCountries) {
+            String countryName = pair[0];
+            String cityName = pair[1];
+            int countryId = country.getCountryIdByName(cityName);
+
+            System.out.println("Country: " + countryName + ", City: " + cityName);
+            savetotravelplan(userId,getTripIdByUserId(userId), countryId, cityName);
+        }
+    } else { //save the choice selected
+        System.out.println("No cities available for the selected preferences.");
+        int countryId = country.getCountryIdByName(city);
+        savetotravelplan(userId,getTripIdByUserId(userId), countryId, city);
+    }
+    
+   }
+  
+}
+   
+   
+    
+

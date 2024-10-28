@@ -33,6 +33,7 @@ public class TravelAppGUI extends JFrame {
     private JComboBox<String> domainComboBox;
     private JPasswordField passwordField;
 
+    //connect to database
     public TravelAppGUI(Connection connection) {
         this.conn = connection; // Assign the provided connection from the Terhal2 class
 
@@ -298,6 +299,7 @@ private void handleLogin(JFrame loginFrame, String username, String password, JF
         // Launch the questionnaire to gather user preferences
         Questionaire Questionaire = new Questionaire(conn,currentUser.getUserId() );
         Questionaire.showMainInfo();
+        //call travel plan and take the userid as the constructor
     }
     
 }

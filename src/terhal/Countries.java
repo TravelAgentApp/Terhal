@@ -94,5 +94,25 @@ public List<String> cityNames = new ArrayList<>();     // To store city names
 
     return countries; // Return the list of country-city pairs
 }
+ 
+    // Method to fetch the countryId by country name and city name
+    public int getCountryIdByName( String cityName) {
+    int countryId = -1;
+    String query = "SELECT countryId FROM Countries WHERE city = ?";
+
+    try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+        pstmt.setString(1, cityName);
+        ResultSet rs = pstmt.executeQuery();
+
+        if (rs.next()) {
+            countryId = rs.getInt("countryId");
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+
+    return countryId;
+}
+    
 
 }
