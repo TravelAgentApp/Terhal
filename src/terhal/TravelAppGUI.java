@@ -329,6 +329,7 @@ public class App extends JFrame {
     private Map<String, DailyPlan> dailyPlans;
     TravelPlan travelPlan;
     int tripId;
+    String cityclicked;
 
     public App(TravelPlan travelPlan, int tripId) {
         this.travelPlan = travelPlan;
@@ -398,7 +399,8 @@ public class App extends JFrame {
             @Override
             public void mouseClicked(MouseEvent e) {
                 // Open a new frame when the city name is clicked
-                
+               cityclicked = cityName; // Use the variable passed to the method
+            //System.out.println("City clicked: " + city); // For debugging or confirmation
                initializePlans();
                showWeeklyPlan();
             }
@@ -460,10 +462,10 @@ public class App extends JFrame {
         return new ImageIcon(newImg);
     }
     
-    
+    /*
        // Initialize plans based on data from TravelPlan
     public void initializePlans() {
-        // Assuming a fixed duration of 5 days; you could modify this to be dynamic
+        // get duration of user
         int travelDuration = travelPlan.getduration(tripId, currentUser.getUserId() );
             
         
@@ -493,6 +495,32 @@ public class App extends JFrame {
             }
         }
     }
+*/
+    
+    public void initializePlans() {
+    int travelDuration = travelPlan.getduration(tripId, currentUser.getUserId());
+
+    for (String city : travelPlan.getCitynames()) {
+        Map<String, List<Integer>> activitiesByTime = travelPlan.getActivitiesByTime(city);
+        List<Integer> restaurants = travelPlan.getRestaurantsByCity(city);
+
+        // Debugging output to verify correct data retrieval
+        System.out.println("City: " + city);
+        System.out.println("Activities by time: " + activitiesByTime);
+        System.out.println("Restaurants: " + restaurants);
+
+        List<Day> itinerary = travelPlan.createDailyItinerary(activitiesByTime, restaurants, travelDuration);
+
+        for (Day day : itinerary) {
+            String dayName = day.getDayName();
+            String activities = "Morning Activity ID: " + day.getMorningActivity() + ", Afternoon Activity ID: " + day.getEveningActivity() + ", Night Activity ID: " + day.getNightActivity();
+            String restaurantDetails = "Breakfast: " + day.getRestaurantBreakfast() + ", Dinner: " + day.getRestaurantDinner();
+
+            DailyPlan dailyPlan = new DailyPlan(dayName, city, activities, restaurantDetails, "Weather data here", mainFrame);
+            dailyPlans.put(dayName, dailyPlan);
+        }
+    }
+}
 
     public void showWeeklyPlan() {
         if (mainFrame != null) {
@@ -530,7 +558,7 @@ public class App extends JFrame {
     }
 
     // Inner DailyPlan class remains the same
-    static class DailyPlan {
+    public class DailyPlan {
         private String day;
         private String city;
         private String activities;
@@ -552,7 +580,7 @@ public class App extends JFrame {
             if (mainFrame != null) {
                 mainFrame.dispose();
             }
-            mainFrame = new JFrame(day + " Plan in " + city);
+            mainFrame = new JFrame(day + " Plan in " + cityclicked);
             mainFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
             mainFrame.setSize(400, 300);
             mainFrame.setLayout(new BorderLayout());

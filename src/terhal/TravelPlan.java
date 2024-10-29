@@ -41,42 +41,92 @@ class TravelPlan {
   
   
     
- 
-     public Map<String, List<Integer>> getActivitiesByTime(String city, String activityPreference) {
-        Map<String, List<Integer>> activitiesByTime = new HashMap<>();
-        activitiesByTime.put("morning", new ArrayList<>());
-        activitiesByTime.put("evening", new ArrayList<>());
-        activitiesByTime.put("night", new ArrayList<>());
+ /*
+  public Map<String, List<Integer>> getActivitiesByTime(String city, String activityPreference) {
+    Map<String, List<Integer>> activitiesByTime = new HashMap<>();
+    activitiesByTime.put("morning", new ArrayList<>());
+    activitiesByTime.put("evening", new ArrayList<>());
+    activitiesByTime.put("night", new ArrayList<>());
 
-        String query = "SELECT activityId, best_time_to_go FROM Activities WHERE location = (SELECT countryId FROM Countries WHERE city = ?) AND activity_type = ?";
-        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
-            pstmt.setString(1, city);
-            pstmt.setString(2, activityPreference);
-            ResultSet rs = pstmt.executeQuery();
-            while (rs.next()) {
-                int activityId = rs.getInt("activityId");
-                String bestTime = rs.getString("best_time_to_go");
-                if (bestTime.equalsIgnoreCase("morning")) {
-                    activitiesByTime.get("morning").add(activityId);
-                } else if (bestTime.equalsIgnoreCase("evening")) {
-                    activitiesByTime.get("evening").add(activityId);
-                } else if (bestTime.equalsIgnoreCase("night")) {
-                    activitiesByTime.get("night").add(activityId);
-                }
+    String query = "SELECT activityId, best_time_to_go FROM Activities "
+                 + "WHERE location = (SELECT countryId FROM Countries WHERE city = ?) "
+                 + "AND activity_type = ?";
+    try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+        pstmt.setString(1, city);
+        pstmt.setString(2, activityPreference);
+        ResultSet rs = pstmt.executeQuery();
+        while (rs.next()) {
+            int activityId = rs.getInt("activityId");
+            String bestTime = rs.getString("best_time_to_go");
+
+            // Sort activities into morning, evening, or night based on best_time_to_go
+            if (bestTime.startsWith("09") || bestTime.startsWith("10") || bestTime.startsWith("11")) {
+                activitiesByTime.get("morning").add(activityId);
+            } else if (bestTime.startsWith("12") || bestTime.startsWith("13") || bestTime.startsWith("14") || bestTime.startsWith("15")) {
+                activitiesByTime.get("evening").add(activityId);
+            } else if (bestTime.startsWith("16") || bestTime.startsWith("17") || bestTime.startsWith("18") || bestTime.startsWith("19")) {
+                activitiesByTime.get("night").add(activityId);
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
-        return activitiesByTime;
+    } catch (SQLException e) {
+        e.printStackTrace();
     }
+    return activitiesByTime;
+}
+
+*/
+    
+    public Map<String, List<Integer>> getActivitiesByTime(String city) {
+    Map<String, List<Integer>> activitiesByTime = new HashMap<>();
+    activitiesByTime.put("morning", new ArrayList<>());
+    activitiesByTime.put("afternoon", new ArrayList<>());
+    activitiesByTime.put("evening", new ArrayList<>());
+
+    String query = "SELECT activityId, best_time_to_go FROM Activities WHERE location = (SELECT countryId FROM Countries WHERE city = ?)";
+    try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+        pstmt.setString(1, city);
+        ResultSet rs = pstmt.executeQuery();
+        while (rs.next()) {
+            int activityId = rs.getInt("activityId");
+            String bestTime = rs.getString("best_time_to_go");
+
+            // Categorize the activity based on time of day
+            if (bestTime.compareTo("12:00:00") <= 0) {
+                activitiesByTime.get("morning").add(activityId);
+            } else if (bestTime.compareTo("18:00:00") <= 0) {
+                activitiesByTime.get("afternoon").add(activityId);
+            } else {
+                activitiesByTime.get("evening").add(activityId);
+            }
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return activitiesByTime;
+}
+
+public List<Integer> getRestaurantsByCity(String city) {
+    List<Integer> restaurants = new ArrayList<>();
+    String query = "SELECT restaurantId FROM Restaurants WHERE city = ?";
+    try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+        pstmt.setString(1, city);
+        ResultSet rs = pstmt.executeQuery();
+        while (rs.next()) {
+            restaurants.add(rs.getInt("restaurantId"));
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return restaurants;
+}
 
      
      public String getCuisinePrefference (int tripId, String UserId) {
     String restaurants = "";
-    String query = "SELECT cuisine_preference FROM trips WHERE userId = ?";
+    String query = "SELECT cuisine_preference FROM trips WHERE userId = ? AND tripId = ?";
     try (PreparedStatement pstmt = conn.prepareStatement(query)) {
         pstmt.setString(1, UserId);
- 
+        pstmt.setInt(2, tripId);
         ResultSet rs = pstmt.executeQuery();
         while (rs.next()) {
             restaurants= rs.getString("cuisine_preference");
@@ -89,10 +139,11 @@ class TravelPlan {
      
     public String getactivityPrefference (int tripId, String UserId) {
     String activity = "";
-    String query = "SELECT activity_preference FROM trips WHERE userId = ?";
+    String query = "SELECT activity_preference FROM trips WHERE userId = ? AND tripId = ?";
+
     try (PreparedStatement pstmt = conn.prepareStatement(query)) {
         pstmt.setString(1, UserId);
- 
+        pstmt.setInt(2, tripId);
         ResultSet rs = pstmt.executeQuery();
         while (rs.next()) {
             activity= rs.getString("activity_preference");
@@ -134,7 +185,7 @@ public int getduration (int tripId, String UserId) {
     }
     return i;
           }
-
+/*
      public List<Day> createDailyItinerary(Map<String, List<Integer>> activitiesByTime, List<Integer> restaurants, int travelDuration) {
     List<Day> days = new ArrayList<>();
 
@@ -149,6 +200,27 @@ public int getduration (int tripId, String UserId) {
         // Assign restaurants for each meal
         day.setRestaurantBreakfast(getNextRestaurant(restaurants));
         day.setRestaurantLunch(getNextRestaurant(restaurants));
+        day.setRestaurantDinner(getNextRestaurant(restaurants));
+
+        days.add(day);
+    }
+    return days;
+}
+*/
+
+public List<Day> createDailyItinerary(Map<String, List<Integer>> activitiesByTime, List<Integer> restaurants, int travelDuration) {
+    List<Day> days = new ArrayList<>();
+    
+    for (int i = 1; i <= travelDuration; i++) {
+        Day day = new Day("Day " + i);
+
+        // Assign activities for each time of day
+        day.setMorningActivity(getNextActivity(activitiesByTime.get("morning")));
+        day.setEveningActivity(getNextActivity(activitiesByTime.get("afternoon")));
+        day.setNightActivity(getNextActivity(activitiesByTime.get("evening")));
+
+        // Assign restaurants for each meal (2 meals a day in this case)
+        day.setRestaurantBreakfast(getNextRestaurant(restaurants));
         day.setRestaurantDinner(getNextRestaurant(restaurants));
 
         days.add(day);
