@@ -675,16 +675,16 @@ private void savePreferencesToDatabase() {
     
 // Method to save each country into the travel plan
 private void savetotravelplan(String userId, int tripId, int countryId, String city) {
-    String query = "INSERT INTO travelplan (userId, tripId, countryId, city) " +
-                   "VALUES (?, ?, ?, ? ) " +
+    String query = "INSERT INTO travelplans (userId, tripId, countryId, city) " +
+                   "VALUES (?, ?, ?, ?) " +
                    "ON DUPLICATE KEY UPDATE countryId = ?";
 
     try (PreparedStatement pstmt = conn.prepareStatement(query)) {
         pstmt.setString(1, userId);
         pstmt.setInt(2, tripId);
         pstmt.setInt(3, countryId);
-        pstmt.setInt(4, countryId); // For duplicate key update
-        pstmt.setString(5, city); // For duplicate key update
+        pstmt.setString(4, city);
+        pstmt.setInt(5, countryId); // Set the fifth parameter for the duplicate key update
 
         pstmt.executeUpdate();
         System.out.println("Country suggestion saved for travel plan with tripId " + tripId + " and userId " + userId);
@@ -734,6 +734,46 @@ public int getTripIdByUserId(String userId) {
     return tvID; // Return the found tripId or -1 if none found
 }
     
+ public String getCityNamefromTPbyUserID(String userId) {
+    String query = "SELECT city FROM travelplans WHERE userId = ?";
+    String TP = ""; // Default value if no tripId is found
+
+    try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+        pstmt.setString(1, userId); // Set the userId parameter
+        ResultSet rs = pstmt.executeQuery();
+
+        // Check if there's a result, and retrieve tripId
+        if (rs.next()) {
+            TP = rs.getString("city");
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+        JOptionPane.showMessageDialog(null, "Error retrieving trip ID: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+    }
+    return TP; // Default value if no tripId is found
+} 
+ 
+     public String[] getcityNames(String userId) {
+    String query = "SELECT city FROM travelplans WHERE userId = ?";
+
+    List<String> cityNamesList = new ArrayList<>(); // Create a list to store city names
+    
+    try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+        pstmt.setString(1, userId); // Set the userId parameter
+        ResultSet rs = pstmt.executeQuery();
+
+        // Retrieve city names from the result set
+        while (rs.next()) {
+            cityNamesList.add(rs.getString("city")); // Add each city to the list
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+        JOptionPane.showMessageDialog(null, "Error retrieving city names: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+    }
+
+    // Convert the list to an array and return
+    return cityNamesList.toArray(new String[0]); // Returns an array containing all cities
+}
    private void saveCitiestoDB() {// save cities to travelplan
     Countries country = new Countries(conn); // Create Country object with DB connection
 

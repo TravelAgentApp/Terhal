@@ -15,12 +15,20 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.UUID;
 import java.util.List;
+import java.util.Map;
 
 public class TravelAppGUI extends JFrame {
     private User currentUser;
@@ -32,6 +40,7 @@ public class TravelAppGUI extends JFrame {
     private JTextField emailField;
     private JComboBox<String> domainComboBox;
     private JPasswordField passwordField;
+    
 
     //connect to database
     public TravelAppGUI(Connection connection) {
@@ -135,7 +144,8 @@ private void handleLogin(JFrame loginFrame, String username, String password, JF
 
         loginFrame.dispose();  // Close login window
         mainFrame.dispose();   // Close the login/register window (passed as an argument)
-        showMainInfo();         // Call the main app window
+        //showMainInfo();         // Call the main app window
+        showPlansPage();
     } else {
         JOptionPane.showMessageDialog(loginFrame, "Invalid login credentials.");
     }
@@ -248,6 +258,7 @@ private void handleLogin(JFrame loginFrame, String username, String password, JF
         registerNewUser(firstName + " " + secondName + " " + lastName, email, username, password);
         JOptionPane.showMessageDialog(frame, "Registration successful! You can now log in.", "Registration Success", JOptionPane.INFORMATION_MESSAGE);
         frame.dispose();
+        showMainInfo();
     }
 
     private boolean isEmailRegistered(String email) {
@@ -300,7 +311,337 @@ private void handleLogin(JFrame loginFrame, String username, String password, JF
         Questionaire Questionaire = new Questionaire(conn,currentUser.getUserId() );
         Questionaire.showMainInfo();
         //call travel plan and take the userid as the constructor
+       
     }
     
+    void showPlansPage(){
+         // Launch the questionnaire to gather user preferences
+        Questionaire Questionaire = new Questionaire(conn,currentUser.getUserId() );
+        //call travel plan and take the userid as the constructor
+        TravelPlan TravelPlan = new TravelPlan(Questionaire.getcityNames(currentUser.getUserId()),currentUser.getUserId(),Questionaire.getTripIdByUserId(currentUser.getUserId()), conn);
+        App DisplayHome = new App (TravelPlan, Questionaire.getTripIdByUserId(currentUser.getUserId()));
+        //TravelPlanner travelPlanner = new TravelPlanner(TravelPlan);
+    }
+
+public class App extends JFrame {
+    private JPanel cityPanel;
+    private JFrame mainFrame;
+    private Map<String, DailyPlan> dailyPlans;
+    TravelPlan travelPlan;
+    int tripId;
+
+    public App(TravelPlan travelPlan, int tripId) {
+        this.travelPlan = travelPlan;
+        this.tripId = tripId;
+        this.dailyPlans = new HashMap<>();
+        setTitle("Welcome to Terhal");
+        setSize(600, 500);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLayout(new BorderLayout(10, 10));
+
+        // Program icon
+        setIconImage(Toolkit.getDefaultToolkit().getImage("path/to/icon.png"));
+
+        // Panel to display all city images
+        cityPanel = new JPanel();
+        cityPanel.setLayout(new GridLayout(0, 1, 10, 10)); // Display in a vertical list
+        cityPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        // Use city names from the TravelPlan object
+        String[] cities = travelPlan.getCitynames();
+        for (String city : cities) {
+            cityPanel.add(createCityPanel(city));
+        }
+
+        JScrollPane scrollPane = new JScrollPane(cityPanel); // Scrollable display
+        add(scrollPane, BorderLayout.CENTER);
+
+        // Button panel
+    JPanel buttonPanel = new JPanel();
+    buttonPanel.setBackground(new Color(135, 206, 235));
+
+    // "Explore" button (non-functional for now)
+    JButton exploreButton = new JButton("Explore");
+    exploreButton.setBackground(new Color(0, 153, 51));
+    exploreButton.setForeground(Color.WHITE);
+    exploreButton.setFont(new Font("Arial", Font.BOLD, 16));
+
+    // "Add New Plan" button, which will take the user back to showMainInfo() to add new preferences
+    JButton addNewPlanButton = new JButton("Add New Plan");
+    addNewPlanButton.setBackground(new Color(0, 102, 204));
+    addNewPlanButton.setForeground(Color.WHITE);
+    addNewPlanButton.setFont(new Font("Arial", Font.BOLD, 16));
+
+    // Add action listener for "Add New Plan" button
+    addNewPlanButton.addActionListener(e -> {
+        showMainInfo(); // Call showMainInfo() to add new preferences
+        
+    });
+
+    // Add buttons to the panel
+    buttonPanel.add(exploreButton);
+    buttonPanel.add(addNewPlanButton);
+
+    // Add button panel to the bottom of the frame
+    add(buttonPanel, BorderLayout.SOUTH);
+
+    setVisible(true);
+    }
+
+    private JPanel createCityPanel(String cityName) {
+        JPanel panel = new JPanel(new BorderLayout());
+      
+        // Create a clickable JLabel for the city name
+        JLabel cityLabel = new JLabel(cityName, JLabel.CENTER);
+        cityLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)); // Change cursor to hand when hovering
+        cityLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // Open a new frame when the city name is clicked
+                
+               initializePlans();
+               showWeeklyPlan();
+            }
+        });
+
+        JLabel cityImageLabel = new JLabel("", JLabel.CENTER);
+        
+        String imagePath = getCityImagePath(cityName); // Method to get image path based on city
+        ImageIcon cityIcon = resizeImage(imagePath, 300, 200);
+
+        if (cityIcon != null) {
+            cityImageLabel.setIcon(cityIcon);
+        } else {
+            cityImageLabel.setText("Image not available!");
+        }
+
+        panel.add(cityLabel, BorderLayout.NORTH);
+        panel.add(cityImageLabel, BorderLayout.CENTER);
+        return panel;
+    }
+
+
+   private String getCityImagePath(String cityName) {
+    switch (cityName) {
+        case "Abha": 
+            return "src/Abha.jpg";
+        case "Dammam": 
+            return "src/Dammam.jpg";
+        case "Hafar Al-Batin": 
+            return "src/HafarAlBatin.jpg";
+        case "Jeddah": 
+            return "src/Jeddah.jpg";
+        case "Khamis Mushait": 
+            return "src/KhamisMushait.jpg";
+        case "Khobar": 
+            return "src/Khobar.jpg";
+        case "Medina": 
+            return "src/Medina.jpg";
+        case "Najran": 
+            return "src/Najran.jpg";
+        case "Riyadh": 
+            return "src/Riyadh.jpg";
+        case "Tabuk": 
+            return "src/Tabuk.jpg";
+        case "Makkah": 
+            return "src/Makkah.jpg";
+        default: 
+            return null;
+    }
+}
+
+
+    // Resize image
+    private ImageIcon resizeImage(String imagePath, int width, int height) {
+        ImageIcon icon = new ImageIcon(imagePath);
+        if (icon.getIconWidth() == -1) return null;
+        Image img = icon.getImage();
+        Image newImg = img.getScaledInstance(width, height, Image.SCALE_SMOOTH);
+        return new ImageIcon(newImg);
+    }
+    
+    
+       // Initialize plans based on data from TravelPlan
+    public void initializePlans() {
+        // Assuming a fixed duration of 5 days; you could modify this to be dynamic
+        int travelDuration = travelPlan.getduration(tripId, currentUser.getUserId() );
+            
+        
+        // Retrieve activities and restaurants based on city and preferences
+        for (String city : travelPlan.getCitynames()) {
+            // Retrieve activities for the city
+            Map<String, List<Integer>> activitiesByTime = travelPlan.getActivitiesByTime(city, travelPlan.getactivityPrefference(tripId,currentUser.getUserId()));
+            
+            
+            // Retrieve restaurants for the city
+            List<Integer> restaurants = travelPlan.getRestaurantsByPreference(city, travelPlan.getCuisinePrefference(tripId,currentUser.getUserId() ));
+             // Debugging output
+        System.out.println("City: " + city);
+        System.out.println("Activities by time: " + activitiesByTime);
+        System.out.println("Restaurants: " + restaurants);
+            // Create daily itinerary using fetched data
+            List<Day> itinerary = travelPlan.createDailyItinerary(activitiesByTime, restaurants, travelDuration);
+            
+            // Populate DailyPlan instances for each day
+            for (Day day : itinerary) {
+                String dayName = day.getDayName();
+                DailyPlan dailyPlan = new DailyPlan(dayName, city, 
+                                                    "Activity ID: " + day.getMorningActivity(),
+                                                    "Restaurant ID: " + day.getRestaurantBreakfast(), 
+                                                    "Weather data here", mainFrame);
+                dailyPlans.put(dayName, dailyPlan);
+            }
+        }
+    }
+
+    public void showWeeklyPlan() {
+        if (mainFrame != null) {
+            mainFrame.dispose();
+        }
+        
+        mainFrame = new JFrame("Weekly Travel Plan");
+        mainFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        mainFrame.setSize(600, 400);
+        mainFrame.setLayout(new BorderLayout());
+
+        JPanel planPanel = new JPanel(new GridLayout(0, 1));
+        for (String day : dailyPlans.keySet()) {
+            JButton dayButton = new JButton(day);
+            dayButton.addActionListener(e -> showDailyPlan(day));
+            planPanel.add(dayButton);
+        }
+
+        JPanel buttonPanel = new JPanel(new GridLayout(1, 1));
+        JButton backButton = new JButton("Back");
+        backButton.addActionListener(e -> mainFrame.dispose());
+        buttonPanel.add(backButton);
+
+        mainFrame.add(planPanel, BorderLayout.CENTER);
+        mainFrame.add(buttonPanel, BorderLayout.SOUTH);
+
+        mainFrame.setVisible(true);
+    }
+
+    private void showDailyPlan(String day) {
+        DailyPlan dailyPlan = dailyPlans.get(day);
+        if (dailyPlan != null) {
+            dailyPlan.showDetails();
+        }
+    }
+
+    // Inner DailyPlan class remains the same
+    static class DailyPlan {
+        private String day;
+        private String city;
+        private String activities;
+        private String restaurants;
+        private String weather;
+        private JFrame mainFrame;
+        private JFrame parentFrame;
+
+        public DailyPlan(String day, String city, String activities, String restaurants, String weather, JFrame parentFrame) {
+            this.day = day;
+            this.city = city;
+            this.activities = activities;
+            this.restaurants = restaurants;
+            this.weather = weather;
+            this.parentFrame = parentFrame;
+        }
+
+        public void showDetails() {
+            if (mainFrame != null) {
+                mainFrame.dispose();
+            }
+            mainFrame = new JFrame(day + " Plan in " + city);
+            mainFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            mainFrame.setSize(400, 300);
+            mainFrame.setLayout(new BorderLayout());
+
+            JPanel detailsPanel = new JPanel(new GridLayout(4, 1));
+            detailsPanel.add(new JLabel("Activities: " + activities));
+            detailsPanel.add(new JLabel("Restaurants: " + restaurants));
+            detailsPanel.add(new JLabel("Weather: " + weather));
+
+            JPanel buttonPanel = new JPanel(new GridLayout(1, 3));
+            JButton editButton = new JButton("Edit Plan");
+            JButton saveButton = new JButton("Save Plan");
+            JButton backButton = new JButton("Back");
+
+            editButton.addActionListener(e -> showEditDialog());
+            saveButton.addActionListener(e -> savePlanToFile());
+            backButton.addActionListener(e -> {
+                mainFrame.dispose();
+                parentFrame.setVisible(true);
+            });
+
+            buttonPanel.add(editButton);
+            buttonPanel.add(saveButton);
+            buttonPanel.add(backButton);
+
+            mainFrame.add(detailsPanel, BorderLayout.CENTER);
+            mainFrame.add(buttonPanel, BorderLayout.SOUTH);
+
+            mainFrame.setVisible(true);
+        }
+
+        // Method to show edit dialog, save plan to file, etc. remain unchanged
+        
+         private void showEditDialog() {
+            JFrame editFrame = new JFrame("Edit " + day + " Plan");
+            editFrame.setSize(400, 300);
+            editFrame.setLayout(new GridLayout(5, 2));
+
+            JTextField activitiesField = new JTextField(activities);
+            JTextField restaurantsField = new JTextField(restaurants);
+            JTextField weatherField = new JTextField(weather);
+
+            editFrame.add(new JLabel("Activities:"));
+            editFrame.add(activitiesField);
+            editFrame.add(new JLabel("Restaurants:"));
+            editFrame.add(restaurantsField);
+            editFrame.add(new JLabel("Weather:"));
+            editFrame.add(weatherField);
+
+            JButton saveButton = new JButton("Save Changes");
+            saveButton.addActionListener(e -> {
+                if (!activitiesField.getText().isEmpty() && !restaurantsField.getText().isEmpty() && !weatherField.getText().isEmpty()) {
+                    activities = activitiesField.getText();
+                    restaurants = restaurantsField.getText();
+                    weather = weatherField.getText();
+                    
+                    editFrame.dispose();
+                    showDetails(); // Refresh the details view
+                } else {
+                    JOptionPane.showMessageDialog(editFrame, "Please fill in all fields.", "Input Error", JOptionPane.WARNING_MESSAGE);
+                }
+            });
+
+            editFrame.add(saveButton);
+            editFrame.setVisible(true);
+        }
+
+        private void savePlanToFile() {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setDialogTitle("Specify a file to save");
+
+            int userSelection = fileChooser.showSaveDialog(mainFrame);
+            if (userSelection == JFileChooser.APPROVE_OPTION) {
+                File fileToSave = fileChooser.getSelectedFile();
+                try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileToSave))) {
+                    writer.write(toString());
+                    writer.newLine();
+                    JOptionPane.showMessageDialog(mainFrame, "Plan saved successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                } catch (IOException e) {
+                    JOptionPane.showMessageDialog(mainFrame, "Error saving the plan: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        }
+
+}
+
+
+
+
+}
 }
     
