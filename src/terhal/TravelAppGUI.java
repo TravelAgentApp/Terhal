@@ -497,7 +497,7 @@ public class App extends JFrame {
     }
 */
     
-    public void initializePlans() {
+   public void initializePlans() {
     int travelDuration = travelPlan.getduration(tripId, currentUser.getUserId());
 
     for (String city : travelPlan.getCitynames()) {
@@ -513,14 +513,24 @@ public class App extends JFrame {
 
         for (Day day : itinerary) {
             String dayName = day.getDayName();
-            String activities = "Morning Activity ID: " + day.getMorningActivity() + ", Afternoon Activity ID: " + day.getEveningActivity() + ", Night Activity ID: " + day.getNightActivity();
-            String restaurantDetails = "Breakfast: " + day.getRestaurantBreakfast() + ", Dinner: " + day.getRestaurantDinner();
+            
+            // Retrieve the names of activities and restaurants
+            String morningActivity = day.getMorningActivity() != null ? travelPlan.getActivityNameById(day.getMorningActivity()) : "None";
+            String afternoonActivity = day.getEveningActivity() != null ? travelPlan.getActivityNameById(day.getEveningActivity()) : "None";
+            String nightActivity = day.getNightActivity() != null ? travelPlan.getActivityNameById(day.getNightActivity()) : "None";
+            String breakfastRestaurant = day.getRestaurantBreakfast() != null ? travelPlan.getRestaurantNameById(day.getRestaurantBreakfast()) : "None";
+            String dinnerRestaurant = day.getRestaurantDinner() != null ? travelPlan.getRestaurantNameById(day.getRestaurantDinner()) : "None";
+
+            // Concatenate activities and restaurant details to pass to DailyPlan
+            String activities = "Morning: " + morningActivity + ", Afternoon: " + afternoonActivity + ", Night: " + nightActivity;
+            String restaurantDetails = "Breakfast: " + breakfastRestaurant + ", Dinner: " + dinnerRestaurant;
 
             DailyPlan dailyPlan = new DailyPlan(dayName, city, activities, restaurantDetails, "Weather data here", mainFrame);
             dailyPlans.put(dayName, dailyPlan);
         }
     }
 }
+
 
     public void showWeeklyPlan() {
         if (mainFrame != null) {
@@ -576,41 +586,42 @@ public class App extends JFrame {
             this.parentFrame = parentFrame;
         }
 
-        public void showDetails() {
-            if (mainFrame != null) {
-                mainFrame.dispose();
-            }
-            mainFrame = new JFrame(day + " Plan in " + cityclicked);
-            mainFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-            mainFrame.setSize(400, 300);
-            mainFrame.setLayout(new BorderLayout());
+public void showDetails() {
+    if (mainFrame != null) {
+        mainFrame.dispose();
+    }
+    mainFrame = new JFrame(day + " Plan in " + city);
+    mainFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+    mainFrame.setSize(400, 300);
+    mainFrame.setLayout(new BorderLayout());
 
-            JPanel detailsPanel = new JPanel(new GridLayout(4, 1));
-            detailsPanel.add(new JLabel("Activities: " + activities));
-            detailsPanel.add(new JLabel("Restaurants: " + restaurants));
-            detailsPanel.add(new JLabel("Weather: " + weather));
+    JPanel detailsPanel = new JPanel(new GridLayout(4, 1));
+    detailsPanel.add(new JLabel("Activities: " + activities));
+    detailsPanel.add(new JLabel("Restaurants: " + restaurants));
+    detailsPanel.add(new JLabel("Weather: " + weather));
 
-            JPanel buttonPanel = new JPanel(new GridLayout(1, 3));
-            JButton editButton = new JButton("Edit Plan");
-            JButton saveButton = new JButton("Save Plan");
-            JButton backButton = new JButton("Back");
+    JPanel buttonPanel = new JPanel(new GridLayout(1, 3));
+    JButton editButton = new JButton("Edit Plan");
+    JButton saveButton = new JButton("Save Plan");
+    JButton backButton = new JButton("Back");
 
-            editButton.addActionListener(e -> showEditDialog());
-            saveButton.addActionListener(e -> savePlanToFile());
-            backButton.addActionListener(e -> {
-                mainFrame.dispose();
-                parentFrame.setVisible(true);
-            });
+    editButton.addActionListener(e -> showEditDialog());
+    saveButton.addActionListener(e -> savePlanToFile());
+    backButton.addActionListener(e -> {
+        mainFrame.dispose();
+        parentFrame.setVisible(true);
+    });
 
-            buttonPanel.add(editButton);
-            buttonPanel.add(saveButton);
-            buttonPanel.add(backButton);
+    buttonPanel.add(editButton);
+    buttonPanel.add(saveButton);
+    buttonPanel.add(backButton);
 
-            mainFrame.add(detailsPanel, BorderLayout.CENTER);
-            mainFrame.add(buttonPanel, BorderLayout.SOUTH);
+    mainFrame.add(detailsPanel, BorderLayout.CENTER);
+    mainFrame.add(buttonPanel, BorderLayout.SOUTH);
 
-            mainFrame.setVisible(true);
-        }
+    mainFrame.setVisible(true);
+}
+
 
         // Method to show edit dialog, save plan to file, etc. remain unchanged
         

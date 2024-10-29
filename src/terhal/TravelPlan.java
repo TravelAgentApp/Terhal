@@ -120,7 +120,77 @@ public List<Integer> getRestaurantsByCity(String city) {
     return restaurants;
 }
 
-     
+  public String getActivityNameById(int activityId) {
+    String activityName = "";
+    String query = "SELECT name FROM Activities WHERE activityId = ?";
+    try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+        pstmt.setInt(1, activityId);
+        ResultSet rs = pstmt.executeQuery();
+        if (rs.next()) {
+            activityName = rs.getString("name");
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return activityName;
+}
+
+public String getRestaurantNameById(int restaurantId) {
+    String restaurantName = "";
+    String query = "SELECT name FROM Restaurants WHERE restaurantId = ?";
+    try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+        pstmt.setInt(1, restaurantId);
+        ResultSet rs = pstmt.executeQuery();
+        if (rs.next()) {
+            restaurantName = rs.getString("name");
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return restaurantName;
+}
+ 
+public String getActivityDetailsById(int activityId) {
+    StringBuilder activityDetails = new StringBuilder();
+    String query = "SELECT name, location, purpose, activity_constraints, best_time_to_go, cost, activity_type FROM Activities WHERE activityId = ?";
+    try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+        pstmt.setInt(1, activityId);
+        ResultSet rs = pstmt.executeQuery();
+        if (rs.next()) {
+            activityDetails.append("Name: ").append(rs.getString("name"))
+                .append("\nLocation: ").append(rs.getInt("location"))
+                .append("\nPurpose: ").append(rs.getString("purpose"))
+                .append("\nConstraints: ").append(rs.getString("activity_constraints"))
+                .append("\nBest Time To Go: ").append(rs.getString("best_time_to_go"))
+                .append("\nCost: ").append(rs.getDouble("cost"))
+                .append("\nType: ").append(rs.getString("activity_type"));
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return activityDetails.toString();
+}
+
+public String getRestaurantDetailsById(int restaurantId) {
+    StringBuilder restaurantDetails = new StringBuilder();
+    String query = "SELECT name, cuisine, price_range, rating, city FROM Restaurants WHERE restaurantId = ?";
+    try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+        pstmt.setInt(1, restaurantId);
+        ResultSet rs = pstmt.executeQuery();
+        if (rs.next()) {
+            restaurantDetails.append("Name: ").append(rs.getString("name"))
+                .append("\nCuisine: ").append(rs.getString("cuisine"))
+                .append("\nPrice Range: ").append(rs.getString("price_range"))
+                .append("\nRating: ").append(rs.getDouble("rating"))
+                .append("\nCity: ").append(rs.getString("city"));
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return restaurantDetails.toString();
+}
+
+//////
      public String getCuisinePrefference (int tripId, String UserId) {
     String restaurants = "";
     String query = "SELECT cuisine_preference FROM trips WHERE userId = ? AND tripId = ?";
