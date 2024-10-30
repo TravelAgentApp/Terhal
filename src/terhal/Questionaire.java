@@ -19,6 +19,7 @@ import java.time.LocalDate;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 
+
 public class Questionaire {
 
     static String getaActivityPreference() {
@@ -48,6 +49,7 @@ public class Questionaire {
      private int travelDuration;
     private String travelDurationUnit;
     private String travelPurpose;
+    boolean isVisible =false;
     
     double  flight_p;
       double  restaurant_p;
@@ -150,7 +152,7 @@ public class Questionaire {
     // Method to show main info for user preferences
 public void showMainInfo() {
     JFrame frame = new JFrame("Main Information");
-    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
     frame.setSize(500, 500);
     frame.setLayout(new GridBagLayout());
 
@@ -389,7 +391,7 @@ public void showMainInfo() {
 
     public void showPreferences() {
         JFrame frame = new JFrame("Preferences");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setSize(500, 500);
         frame.setLayout(new BorderLayout(5, 5));
 
@@ -458,7 +460,7 @@ public void showMainInfo() {
 
         // Show or hide the country selection based on the user's answer to "Do you have a specific country in mind?"
         preferenceCombos[5].addActionListener(e -> {
-            boolean isVisible = "Yes".equals(preferenceCombos[5].getSelectedItem());
+            isVisible = "Yes".equals(preferenceCombos[5].getSelectedItem());
             countryLabel.setVisible(isVisible);
             countryCombo.setVisible(isVisible);
             frame.revalidate();
@@ -781,7 +783,7 @@ public int getTripIdByUserId(String userId) {
     List<String[]> availableCountries = country.selectCountry(getFlightBudget(), getWeatherPreference(), getActivityPreference());
     
     // Display the country and city names, and save each to the travel plan
-    if (!availableCountries.isEmpty()) {
+    if (isVisible==false) {
         System.out.println("Here are some cities in Saudi Arabia that match your preferences:");
         for (String[] pair : availableCountries) {
             String countryName = pair[0];

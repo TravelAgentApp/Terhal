@@ -39,42 +39,6 @@ class TravelPlan {
         return citynames;
     }
   
-  
-    
- /*
-  public Map<String, List<Integer>> getActivitiesByTime(String city, String activityPreference) {
-    Map<String, List<Integer>> activitiesByTime = new HashMap<>();
-    activitiesByTime.put("morning", new ArrayList<>());
-    activitiesByTime.put("evening", new ArrayList<>());
-    activitiesByTime.put("night", new ArrayList<>());
-
-    String query = "SELECT activityId, best_time_to_go FROM Activities "
-                 + "WHERE location = (SELECT countryId FROM Countries WHERE city = ?) "
-                 + "AND activity_type = ?";
-    try (PreparedStatement pstmt = conn.prepareStatement(query)) {
-        pstmt.setString(1, city);
-        pstmt.setString(2, activityPreference);
-        ResultSet rs = pstmt.executeQuery();
-        while (rs.next()) {
-            int activityId = rs.getInt("activityId");
-            String bestTime = rs.getString("best_time_to_go");
-
-            // Sort activities into morning, evening, or night based on best_time_to_go
-            if (bestTime.startsWith("09") || bestTime.startsWith("10") || bestTime.startsWith("11")) {
-                activitiesByTime.get("morning").add(activityId);
-            } else if (bestTime.startsWith("12") || bestTime.startsWith("13") || bestTime.startsWith("14") || bestTime.startsWith("15")) {
-                activitiesByTime.get("evening").add(activityId);
-            } else if (bestTime.startsWith("16") || bestTime.startsWith("17") || bestTime.startsWith("18") || bestTime.startsWith("19")) {
-                activitiesByTime.get("night").add(activityId);
-            }
-        }
-    } catch (SQLException e) {
-        e.printStackTrace();
-    }
-    return activitiesByTime;
-}
-
-*/
     
     public Map<String, List<Integer>> getActivitiesByTime(String city) {
     Map<String, List<Integer>> activitiesByTime = new HashMap<>();
@@ -152,13 +116,13 @@ public String getRestaurantNameById(int restaurantId) {
  
 public String getActivityDetailsById(int activityId) {
     StringBuilder activityDetails = new StringBuilder();
-    String query = "SELECT name, location, purpose, activity_constraints, best_time_to_go, cost, activity_type FROM Activities WHERE activityId = ?";
+    String query = "SELECT name, purpose, activity_constraints, best_time_to_go, cost, activity_type FROM Activities WHERE activityId = ?";
     try (PreparedStatement pstmt = conn.prepareStatement(query)) {
         pstmt.setInt(1, activityId);
         ResultSet rs = pstmt.executeQuery();
         if (rs.next()) {
             activityDetails.append("Name: ").append(rs.getString("name"))
-                .append("\nLocation: ").append(rs.getInt("location"))
+                
                 .append("\nPurpose: ").append(rs.getString("purpose"))
                 .append("\nConstraints: ").append(rs.getString("activity_constraints"))
                 .append("\nBest Time To Go: ").append(rs.getString("best_time_to_go"))
@@ -188,6 +152,33 @@ public String getRestaurantDetailsById(int restaurantId) {
         e.printStackTrace();
     }
     return restaurantDetails.toString();
+}
+public boolean isActivityId(int id) {
+    String query = "SELECT COUNT(*) FROM Activities WHERE activityId = ?";
+    try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+        pstmt.setInt(1, id);
+        ResultSet rs = pstmt.executeQuery();
+        if (rs.next()) {
+            return rs.getInt(1) > 0;
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return false;
+}
+
+public boolean isRestaurantId(int id) {
+    String query = "SELECT COUNT(*) FROM Restaurants WHERE restaurantId = ?";
+    try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+        pstmt.setInt(1, id);
+        ResultSet rs = pstmt.executeQuery();
+        if (rs.next()) {
+            return rs.getInt(1) > 0;
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return false;
 }
 
 //////
@@ -255,28 +246,7 @@ public int getduration (int tripId, String UserId) {
     }
     return i;
           }
-/*
-     public List<Day> createDailyItinerary(Map<String, List<Integer>> activitiesByTime, List<Integer> restaurants, int travelDuration) {
-    List<Day> days = new ArrayList<>();
 
-    for (int i = 1; i <= travelDuration; i++) {
-        Day day = new Day("Day " + i);
-
-        // Assign activities for each time of day
-        day.setMorningActivity(getNextActivity(activitiesByTime.get("morning")));
-        day.setEveningActivity(getNextActivity(activitiesByTime.get("evening")));
-        day.setNightActivity(getNextActivity(activitiesByTime.get("night")));
-
-        // Assign restaurants for each meal
-        day.setRestaurantBreakfast(getNextRestaurant(restaurants));
-        day.setRestaurantLunch(getNextRestaurant(restaurants));
-        day.setRestaurantDinner(getNextRestaurant(restaurants));
-
-        days.add(day);
-    }
-    return days;
-}
-*/
 
 public List<Day> createDailyItinerary(Map<String, List<Integer>> activitiesByTime, List<Integer> restaurants, int travelDuration) {
     List<Day> days = new ArrayList<>();
@@ -314,6 +284,88 @@ private Integer getNextRestaurant(List<Integer> restaurants) {
     return null; // No more restaurants
 }
 
+//for presenting options
+public List<String> getActivityNamesByCityId(int cityId) {
+    List<String> activityNames = new ArrayList<>();
+    String query = "SELECT name FROM activities WHERE location = ?";
+
+    try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+        pstmt.setInt(1, cityId); // Set the city name parameter
+        ResultSet rs = pstmt.executeQuery();
+
+        // Loop through the result set and add activity names to the list
+        while (rs.next()) {
+            activityNames.add(rs.getString("name"));
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+        JOptionPane.showMessageDialog(null, "Error retrieving activities for city: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+    }
+
+    return activityNames;
+}
+
+//for presenting travel options
+public List<String> getRestaurantNamesByCity(String cityName) {
+    List<String> restaurantNames = new ArrayList<>();
+    String query = "SELECT name FROM restaurants WHERE city = ?";
+
+    try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+        pstmt.setString(1, cityName);
+        ResultSet rs = pstmt.executeQuery();
+
+        while (rs.next()) {
+            restaurantNames.add(rs.getString("name"));
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+        JOptionPane.showMessageDialog(null, "Error retrieving restaurants for city: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+    }
+
+    return restaurantNames;
+}
+
+public int getActivityIdByName(String activityName) {
+    String query = "SELECT activityId FROM activities WHERE name = ?";
+    try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+        pstmt.setString(1, activityName);
+        ResultSet rs = pstmt.executeQuery();
+        if (rs.next()) {
+            return rs.getInt("activityId");
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return -1; // Return -1 if not found
+}
+
+public int getRestaurantIdByName(String restaurantName) {
+    String query = "SELECT restaurantId FROM restaurants WHERE name = ?";
+    try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+        pstmt.setString(1, restaurantName);
+        ResultSet rs = pstmt.executeQuery();
+        if (rs.next()) {
+            return rs.getInt("restaurantId");
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return -1; // Return -1 if not found
+}
+
+public int getCitytIdByName(String Cityname) {
+    String query = "SELECT countryId FROM Countries WHERE City = ?";
+    try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+        pstmt.setString(1, Cityname);
+        ResultSet rs = pstmt.executeQuery();
+        if (rs.next()) {
+            return rs.getInt("countryId");
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return -1; // Return -1 if not found
+}
 public void saveDaysToDatabase(int travelPlanId, List<Day> days) {
     String query = "INSERT INTO day (travelPlanId, day_name, morningActivity, eveningActivity, nightActivity, restaurantBreakfast, restaurantLunch, restaurantDinner) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
