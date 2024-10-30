@@ -459,15 +459,28 @@ public void showMainInfo() {
         countryCombo.setVisible(false);
 
         // Show or hide the country selection based on the user's answer to "Do you have a specific country in mind?"
-        preferenceCombos[5].addActionListener(e -> {
-            isVisible = "Yes".equals(preferenceCombos[5].getSelectedItem());
-            countryLabel.setVisible(isVisible);
-            countryCombo.setVisible(isVisible);
-            frame.revalidate();
-            frame.repaint();
-            
-            city = (String) countryCombo.getSelectedItem();
-        });
+// Show or hide the country selection based on the user's answer to "Do you have a specific Destination to visit in Saudi Arabia?"
+preferenceCombos[5].addActionListener(e -> {
+    isVisible = "Yes".equals(preferenceCombos[5].getSelectedItem());
+    countryLabel.setVisible(isVisible);
+    countryCombo.setVisible(isVisible);
+    frame.revalidate();
+    frame.repaint();
+    
+    // Reset city when "No" is selected or no city is chosen yet
+    if (!isVisible) {
+        city = null;  // Reset city if "No" is selected
+    }
+});
+
+// Add a listener to countryCombo to update `city` only when a valid city is selected
+countryCombo.addActionListener(e -> {
+    String selectedCity = (String) countryCombo.getSelectedItem();
+    if (!"Select".equals(selectedCity)) {
+        city = selectedCity;
+        System.out.println("Selected city: " + city);  // Debug output to confirm selection
+    }
+});
 
         // Add country selection components to the form
         gbc.gridy = questions.length;
@@ -794,9 +807,12 @@ public int getTripIdByUserId(String userId) {
             savetotravelplan(userId,getTripIdByUserId(userId), countryId, cityName);
         }
     } else { //save the choice selected
-        System.out.println("No cities available for the selected preferences.");
-        int countryId = country.getCountryIdByName(city);
-        savetotravelplan(userId,getTripIdByUserId(userId), countryId, city);
+       int countryId = country.getCountryIdByName(city);
+if (countryId > 0) {  // Assume 0 means invalid or non-existent
+    savetotravelplan(userId, getTripIdByUserId(userId), countryId, city);
+} else {
+    System.out.println("Invalid countryId for city: " + city);
+}
     }
     
    }

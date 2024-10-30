@@ -52,7 +52,7 @@ public class TravelAppGUI extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        showLoginOrRegister(); // Show login or register options
+        //showLoginOrRegister(); // Show login or register options
     }
 
 // Show the login or register options
