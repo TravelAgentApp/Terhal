@@ -579,7 +579,7 @@ private void savePreferencesToDatabase() {
                    "activity_preference = VALUES(activity_preference), " +
                    "cuisine_preference = VALUES(cuisine_preference), " +
                    "hotel_preference = VALUES(hotel_preference), " +
-                   "flight_preference = VALUES(flight_preference)";
+                   "flight_preference = VALUES(flight_preference)"; 
 
     try (PreparedStatement pstmt = conn.prepareStatement(query)) {
         pstmt.setString(1, userId);  // Use the userId from the currentUser object
@@ -797,13 +797,13 @@ public int getTripIdByUserId(String userId) {
     
     // Display the country and city names, and save each to the travel plan
     if (isVisible==false) {
-        System.out.println("Here are some cities in Saudi Arabia that match your preferences:");
+        //System.out.println("Here are some cities in Saudi Arabia that match your preferences:");
         for (String[] pair : availableCountries) {
             String countryName = pair[0];
             String cityName = pair[1];
             int countryId = country.getCountryIdByName(cityName);
 
-            System.out.println("Country: " + countryName + ", City: " + cityName);
+            //System.out.println("Country: " + countryName + ", City: " + cityName);
             savetotravelplan(userId,getTripIdByUserId(userId), countryId, cityName);
         }
     } else { //save the choice selected

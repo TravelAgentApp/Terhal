@@ -332,6 +332,7 @@ private void handleLogin(JFrame loginFrame, String username, String password, JF
         // Launch the questionnaire to gather user preferences
         Questionaire Questionaire = new Questionaire(conn,currentUser.getUserId() );
         Questionaire.showMainInfo();
+        
         //call travel plan and take the userid as the constructor
        
     }
