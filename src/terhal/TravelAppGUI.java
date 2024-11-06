@@ -119,12 +119,12 @@ public class TravelAppGUI extends JFrame {
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
         JLabel userLabel = new JLabel("Username:");
-        userLabel.setFont(new Font("Arial", Font.PLAIN, 16));
-        userField = new JTextField(15);
+        userLabel.setFont(new Font("Times New Roman", Font.PLAIN, 16));
+        userField = new JTextField(20);
 
         JLabel passwordLabel = new JLabel("Password:");
-        passwordLabel.setFont(new Font("Arial", Font.PLAIN, 16));
-        passwordField = new JPasswordField(15);
+        passwordLabel.setFont(new Font("Times New Roman", Font.PLAIN, 16));
+        passwordField = new JPasswordField(20);
         
         JButton submitButton = new JButton("Submit");
         styleButton(submitButton);
@@ -534,210 +534,253 @@ private ImageIcon resizeImage(String imagePath, int width, int height) {
     }
 
     // Show buttons for each day of the selected city
-    public void showCityDays(String cityName) {
+    // Show buttons for each day of the selected city
+public void showCityDays(String cityName) {
+    if (mainFrame != null) {
+        mainFrame.dispose();
+    }
+
+    mainFrame = new JFrame(cityName + " - Daily Plans");
+    mainFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+    mainFrame.setSize(520, 700); // Matching style and size
+    mainFrame.setLayout(new BorderLayout());
+    mainFrame.getContentPane().setBackground(new Color(220, 255, 220));
+
+
+    JLabel headerLabel = new JLabel("Daily Plans for " + cityName);
+    headerLabel.setFont(new Font("Times New Roman", Font.BOLD, 24));
+    headerLabel.setForeground(new Color(34, 139, 34));
+    headerLabel.setHorizontalAlignment(SwingConstants.CENTER);
+    headerLabel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+
+    mainFrame.add(headerLabel, BorderLayout.NORTH);
+
+    List<DailyPlan> dailyPlans = cityDailyPlans.get(cityName);
+    JPanel planPanel = new JPanel(new GridLayout(0, 1));
+    planPanel.setBackground(new Color(220, 255, 220));
+
+    for (DailyPlan dailyPlan : dailyPlans) {
+        JButton dayButton = new JButton(dailyPlan.getDayName());
+        dayButton.setFont(new Font("Times New Roman", Font.PLAIN, 18));
+        dayButton.setBackground(new Color(60, 179, 113));
+        dayButton.setForeground(Color.WHITE);
+        dayButton.setFocusPainted(false);
+        dayButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        dayButton.addActionListener(e -> showDailyPlan(dailyPlan));
+        planPanel.add(dayButton);
+    }
+
+    JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 5));
+    buttonPanel.setBackground(new Color(220, 255, 220));
+    JButton backButton = new JButton("Back");
+    styleButton(backButton);
+    backButton.addActionListener(e -> mainFrame.dispose());
+    buttonPanel.add(backButton);
+
+    mainFrame.add(planPanel, BorderLayout.CENTER);
+    mainFrame.add(buttonPanel, BorderLayout.SOUTH);
+
+    mainFrame.setVisible(true);
+}
+
+private void showDailyPlan(DailyPlan dailyPlan) {
+    if (dailyPlan != null) {
+        dailyPlan.showDetails();
+    }
+}
+
+public class DailyPlan {
+    private String day;
+    private String city;
+    private Integer morningActivity;
+    private Integer afternoonActivity;
+    private Integer nightActivity;
+    private Integer breakfastRestaurant;
+    private Integer dinnerRestaurant;
+    private JFrame mainFrame;
+    private JFrame parentFrame;
+
+    public DailyPlan(String day, String city, Integer morningActivity, Integer afternoonActivity,
+                     Integer nightActivity, Integer breakfastRestaurant, Integer dinnerRestaurant,
+                     JFrame parentFrame) {
+        this.day = day;
+        this.city = city;
+        this.morningActivity = morningActivity;
+        this.afternoonActivity = afternoonActivity;
+        this.nightActivity = nightActivity;
+        this.breakfastRestaurant = breakfastRestaurant;
+        this.dinnerRestaurant = dinnerRestaurant;
+        this.parentFrame = parentFrame;
+    }
+
+    public String getDayName() {
+        return day;
+    }
+
+    public void showDetails() {
         if (mainFrame != null) {
             mainFrame.dispose();
         }
-
-        mainFrame = new JFrame(cityName + " - Daily Plans");
+        mainFrame = new JFrame(day + " Plan in " + city);
         mainFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         mainFrame.setSize(520, 700);
         mainFrame.setLayout(new BorderLayout());
+        mainFrame.getContentPane().setBackground(new Color(220, 255, 220));
+        
+        JLabel headerLabel = new JLabel("Plan for " + day + " in " + city);
+        headerLabel.setFont(new Font("Times New Roman", Font.BOLD, 24));
+        headerLabel.setForeground(new Color(34, 139, 34));
+        headerLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        headerLabel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        
+        mainFrame.add(headerLabel, BorderLayout.NORTH);
 
-        List<DailyPlan> dailyPlans = cityDailyPlans.get(cityName);
-        JPanel planPanel = new JPanel(new GridLayout(0, 1));
-        for (DailyPlan dailyPlan : dailyPlans) {
-            JButton dayButton = new JButton(dailyPlan.getDayName());
-            dayButton.addActionListener(e -> showDailyPlan(dailyPlan));
-            planPanel.add(dayButton);
-        }
+        JPanel detailsPanel = new JPanel(new GridLayout(5, 1));
+        detailsPanel.setBackground(new Color(220, 255, 220));
+        detailsPanel.add(new JLabel("Morning Activity: " + getActivityName(morningActivity)));
+        detailsPanel.add(new JLabel("Afternoon Activity: " + getActivityName(afternoonActivity)));
+        detailsPanel.add(new JLabel("Night Activity: " + getActivityName(nightActivity)));
+        detailsPanel.add(new JLabel("Breakfast Restaurant: " + getRestaurantName(breakfastRestaurant)));
+        detailsPanel.add(new JLabel("Dinner Restaurant: " + getRestaurantName(dinnerRestaurant)));
 
-        JPanel buttonPanel = new JPanel(new GridLayout(1, 1));
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        buttonPanel.setBackground(new Color(220, 255, 220));
+        JButton editButton = new JButton("Edit Plan");
+        JButton saveButton = new JButton("Save Plan");
         JButton backButton = new JButton("Back");
-        backButton.addActionListener(e -> mainFrame.dispose());
+        
+        styleButton(editButton);
+        styleButton(saveButton);
+        styleButton(backButton);
+
+        editButton.addActionListener(e -> showEditDialog());
+        saveButton.addActionListener(e -> savePlanToFile());
+        backButton.addActionListener(e -> {
+            mainFrame.dispose();
+            parentFrame.setVisible(true);
+        });
+
+        buttonPanel.add(editButton);
+        buttonPanel.add(saveButton);
         buttonPanel.add(backButton);
 
-        mainFrame.add(planPanel, BorderLayout.CENTER);
-        mainFrame.add(buttonPanel, BorderLayout.SOUTH);
+        // Add buttons for more activity and restaurant details
+        JPanel detailsButtonPanel = new JPanel(new GridLayout(5, 2));
+        detailsButtonPanel.setBackground(new Color(220, 255, 220));
+        addDetailsButton(detailsButtonPanel, "Morning Activity Details", morningActivity);
+        addDetailsButton(detailsButtonPanel, "Afternoon Activity Details", afternoonActivity);
+        addDetailsButton(detailsButtonPanel, "Night Activity Details", nightActivity);
+        addDetailsButton(detailsButtonPanel, "Breakfast Restaurant Details", breakfastRestaurant);
+        addDetailsButton(detailsButtonPanel, "Dinner Restaurant Details", dinnerRestaurant);
+
+        mainFrame.add(detailsPanel, BorderLayout.CENTER);
+        mainFrame.add(detailsButtonPanel, BorderLayout.SOUTH);
+        mainFrame.add(buttonPanel, BorderLayout.NORTH);
 
         mainFrame.setVisible(true);
     }
 
-    private void showDailyPlan(DailyPlan dailyPlan) {
-        if (dailyPlan != null) {
-            dailyPlan.showDetails();
+    private void addDetailsButton(JPanel panel, String buttonText, Integer id) {
+        if (id != null) {
+            JButton detailsButton = new JButton(buttonText);
+            styleButton(detailsButton);
+            detailsButton.addActionListener(e -> showDetailsDialog(id));
+            panel.add(detailsButton);
         }
     }
 
-    public class DailyPlan {
-        private String day;
-        private String city;
-        private Integer morningActivity;
-        private Integer afternoonActivity;
-        private Integer nightActivity;
-        private Integer breakfastRestaurant;
-        private Integer dinnerRestaurant;
-        private JFrame mainFrame;
-        private JFrame parentFrame;
+    private void showDetailsDialog(int id) {
+        String details = "";
+        String title = "Details";
 
-        public DailyPlan(String day, String city, Integer morningActivity, Integer afternoonActivity,
-                         Integer nightActivity, Integer breakfastRestaurant, Integer dinnerRestaurant,
-                         JFrame parentFrame) {
-            this.day = day;
-            this.city = city;
-            this.morningActivity = morningActivity;
-            this.afternoonActivity = afternoonActivity;
-            this.nightActivity = nightActivity;
-            this.breakfastRestaurant = breakfastRestaurant;
-            this.dinnerRestaurant = dinnerRestaurant;
-            this.parentFrame = parentFrame;
+        if (travelPlan.isActivityId(id)) {
+            details = travelPlan.getActivityDetailsById(id);
+            title = "Activity Details";
+        } else if (travelPlan.isRestaurantId(id)) {
+            details = travelPlan.getRestaurantDetailsById(id);
+            title = "Restaurant Details";
+        } else {
+            details = "No details available.";
         }
 
-        public String getDayName() {
-            return day;
-        }
+        JOptionPane.showMessageDialog(mainFrame, details, title, JOptionPane.INFORMATION_MESSAGE);
+    }
 
-        public void showDetails() {
-            if (mainFrame != null) {
-                mainFrame.dispose();
-            }
-            mainFrame = new JFrame(day + " Plan in " + city);
-            mainFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-            mainFrame.setSize(520, 700);
-            mainFrame.setLayout(new BorderLayout());
+    private String getActivityName(Integer activityId) {
+        if (activityId == null) return "None";
+        return travelPlan.getActivityNameById(activityId);
+    }
 
-            JPanel detailsPanel = new JPanel(new GridLayout(5, 1));
-            detailsPanel.add(new JLabel("Morning Activity: " + getActivityName(morningActivity)));
-            detailsPanel.add(new JLabel("Afternoon Activity: " + getActivityName(afternoonActivity)));
-            detailsPanel.add(new JLabel("Night Activity: " + getActivityName(nightActivity)));
-            detailsPanel.add(new JLabel("Breakfast Restaurant: " + getRestaurantName(breakfastRestaurant)));
-            detailsPanel.add(new JLabel("Dinner Restaurant: " + getRestaurantName(dinnerRestaurant)));
+    private String getRestaurantName(Integer restaurantId) {
+        if (restaurantId == null) return "None";
+        return travelPlan.getRestaurantNameById(restaurantId);
+    }
 
-            JPanel buttonPanel = new JPanel(new GridLayout(1, 3));
-            JButton editButton = new JButton("Edit Plan");
-            JButton saveButton = new JButton("Save Plan");
-            JButton backButton = new JButton("Back");
+    private void showEditDialog() {
+        JFrame editFrame = new JFrame("Edit " + day + " Plan");
+        editFrame.setSize(520, 700);
+        editFrame.setLayout(new GridLayout(6, 2));
+        editFrame.getContentPane().setBackground(new Color(220, 255, 220));
+        //editFrame.getRootPane().setBorder(BorderFactory.createMatteBorder(5, 5, 5, 5, new Color(34, 139, 34)));
 
-            editButton.addActionListener(e -> showEditDialog());
-            saveButton.addActionListener(e -> savePlanToFile());
-            backButton.addActionListener(e -> {
-                mainFrame.dispose();
-                parentFrame.setVisible(true);
-            });
+        // Get activity names for the city
+        List<String> activityNames = travelPlan.getActivityNamesByCityId(travelPlan.getCitytIdByName(city));
+        String[] activityOptions = activityNames.toArray(new String[0]);
 
-            buttonPanel.add(editButton);
-            buttonPanel.add(saveButton);
-            buttonPanel.add(backButton);
+        JComboBox<String> morningActivityCombo = new JComboBox<>(activityOptions);
+        JComboBox<String> afternoonActivityCombo = new JComboBox<>(activityOptions);
+        JComboBox<String> nightActivityCombo = new JComboBox<>(activityOptions);
 
-            // Add buttons to get more details for each activity and restaurant
-            JPanel detailsButtonPanel = new JPanel(new GridLayout(5, 2));
-            addDetailsButton(detailsButtonPanel, "Morning Activity Details", morningActivity);
-            addDetailsButton(detailsButtonPanel, "Afternoon Activity Details", afternoonActivity);
-            addDetailsButton(detailsButtonPanel, "Night Activity Details", nightActivity);
-            addDetailsButton(detailsButtonPanel, "Breakfast Restaurant Details", breakfastRestaurant);
-            addDetailsButton(detailsButtonPanel, "Dinner Restaurant Details", dinnerRestaurant);
+        morningActivityCombo.setSelectedItem(getActivityName(morningActivity));
+        afternoonActivityCombo.setSelectedItem(getActivityName(afternoonActivity));
+        nightActivityCombo.setSelectedItem(getActivityName(nightActivity));
 
-            mainFrame.add(detailsPanel, BorderLayout.CENTER);
-            mainFrame.add(detailsButtonPanel, BorderLayout.SOUTH);
-            mainFrame.add(buttonPanel, BorderLayout.NORTH);
+        List<String> restaurantNames = travelPlan.getRestaurantNamesByCity(city);
+        String[] restaurantOptions = restaurantNames.toArray(new String[0]);
 
-            mainFrame.setVisible(true);
-        }
+        JComboBox<String> breakfastRestaurantCombo = new JComboBox<>(restaurantOptions);
+        JComboBox<String> dinnerRestaurantCombo = new JComboBox<>(restaurantOptions);
 
-        private void addDetailsButton(JPanel panel, String buttonText, Integer id) {
-            if (id != null) {
-                JButton detailsButton = new JButton(buttonText);
-                detailsButton.addActionListener(e -> showDetailsDialog(id));
-                panel.add(detailsButton);
-            }
-        }
+        breakfastRestaurantCombo.setSelectedItem(getRestaurantName(breakfastRestaurant));
+        dinnerRestaurantCombo.setSelectedItem(getRestaurantName(dinnerRestaurant));
 
-        private void showDetailsDialog(int id) {
-            String details = "";
-            String title = "Details";
+        editFrame.add(new JLabel("Morning Activity:"));
+        editFrame.add(morningActivityCombo);
+        editFrame.add(new JLabel("Afternoon Activity:"));
+        editFrame.add(afternoonActivityCombo);
+        editFrame.add(new JLabel("Night Activity:"));
+        editFrame.add(nightActivityCombo);
+        editFrame.add(new JLabel("Breakfast Restaurant:"));
+        editFrame.add(breakfastRestaurantCombo);
+        editFrame.add(new JLabel("Dinner Restaurant:"));
+        editFrame.add(dinnerRestaurantCombo);
 
-            if (travelPlan.isActivityId(id)) {
-                details = travelPlan.getActivityDetailsById(id);
-                title = "Activity Details";
-            } else if (travelPlan.isRestaurantId(id)) {
-                details = travelPlan.getRestaurantDetailsById(id);
-                title = "Restaurant Details";
-            } else {
-                details = "No details available.";
-            }
+        JButton saveButton = new JButton("Save Changes");
+        styleButton(saveButton);
+        saveButton.addActionListener(e -> {
+            morningActivity = travelPlan.getActivityIdByName((String) morningActivityCombo.getSelectedItem());
+            afternoonActivity = travelPlan.getActivityIdByName((String) afternoonActivityCombo.getSelectedItem());
+            nightActivity = travelPlan.getActivityIdByName((String) nightActivityCombo.getSelectedItem());
+            breakfastRestaurant = travelPlan.getRestaurantIdByName((String) breakfastRestaurantCombo.getSelectedItem());
+            dinnerRestaurant = travelPlan.getRestaurantIdByName((String) dinnerRestaurantCombo.getSelectedItem());
 
-            JOptionPane.showMessageDialog(mainFrame, details, title, JOptionPane.INFORMATION_MESSAGE);
-        }
+            editFrame.dispose();
+            showDetails();
+        });
 
-        private String getActivityName(Integer activityId) {
-            if (activityId == null) return "None";
-            return travelPlan.getActivityNameById(activityId);
-        }
+        editFrame.add(saveButton);
+        editFrame.setVisible(true);
+    }
 
-        private String getRestaurantName(Integer restaurantId) {
-            if (restaurantId == null) return "None";
-            return travelPlan.getRestaurantNameById(restaurantId);
-        }
+    private void styleButton(JButton button) {
+        button.setFont(new Font("Times New Roman", Font.PLAIN, 18));
+        button.setBackground(new Color(60, 179, 113));
+        button.setForeground(Color.WHITE);
+        button.setFocusPainted(false);
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+    }
 
-        // Existing methods like showEditDialog, savePlanToFile, etc. remain the same
-        private void showEditDialog() {
-    JFrame editFrame = new JFrame("Edit " + day + " Plan");
-    editFrame.setSize(400, 400);
-    editFrame.setLayout(new GridLayout(6, 2));
 
-    // Get activity names for the city
-    List<String> activityNames = travelPlan.getActivityNamesByCityId(travelPlan.getCitytIdByName(city));
-    String[] activityOptions = activityNames.toArray(new String[0]); // Convert list to array
-
-    // Activity Drop-downs
-    JComboBox<String> morningActivityCombo = new JComboBox<>(activityOptions);
-    JComboBox<String> afternoonActivityCombo = new JComboBox<>(activityOptions);
-    JComboBox<String> nightActivityCombo = new JComboBox<>(activityOptions);
-
-    // Pre-select current activities
-    morningActivityCombo.setSelectedItem(getActivityName(morningActivity));
-    afternoonActivityCombo.setSelectedItem(getActivityName(afternoonActivity));
-    nightActivityCombo.setSelectedItem(getActivityName(nightActivity));
-
-    // Restaurant Drop-downs (similar logic for getting restaurant names)
-    List<String> restaurantNames = travelPlan.getRestaurantNamesByCity(city);
-    String[] restaurantOptions = restaurantNames.toArray(new String[0]);
-
-    JComboBox<String> breakfastRestaurantCombo = new JComboBox<>(restaurantOptions);
-    JComboBox<String> dinnerRestaurantCombo = new JComboBox<>(restaurantOptions);
-
-    // Pre-select current restaurants
-    breakfastRestaurantCombo.setSelectedItem(getRestaurantName(breakfastRestaurant));
-    dinnerRestaurantCombo.setSelectedItem(getRestaurantName(dinnerRestaurant));
-
-    // Adding components to the frame
-    editFrame.add(new JLabel("Morning Activity:"));
-    editFrame.add(morningActivityCombo);
-    editFrame.add(new JLabel("Afternoon Activity:"));
-    editFrame.add(afternoonActivityCombo);
-    editFrame.add(new JLabel("Night Activity:"));
-    editFrame.add(nightActivityCombo);
-    editFrame.add(new JLabel("Breakfast Restaurant:"));
-    editFrame.add(breakfastRestaurantCombo);
-    editFrame.add(new JLabel("Dinner Restaurant:"));
-    editFrame.add(dinnerRestaurantCombo);
-
-    JButton saveButton = new JButton("Save Changes");
-    saveButton.addActionListener(e -> {
-        // Update activities and restaurants based on selected values
-        morningActivity = travelPlan.getActivityIdByName((String) morningActivityCombo.getSelectedItem());
-        afternoonActivity = travelPlan.getActivityIdByName((String) afternoonActivityCombo.getSelectedItem());
-        nightActivity = travelPlan.getActivityIdByName((String) nightActivityCombo.getSelectedItem());
-        breakfastRestaurant = travelPlan.getRestaurantIdByName((String) breakfastRestaurantCombo.getSelectedItem());
-        dinnerRestaurant = travelPlan.getRestaurantIdByName((String) dinnerRestaurantCombo.getSelectedItem());
-
-        editFrame.dispose();
-        showDetails(); // Refresh the details view
-    });
-
-    editFrame.add(saveButton);
-    editFrame.setVisible(true);
-}
 
 
     private void savePlanToFile() {
