@@ -1,14 +1,5 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-package terhal;
 
-/**
- *
- * @author janaz
- */
-//package com.mycompany.travelappgui;
+package terhal;
 
 
 import javax.swing.*;
@@ -30,6 +21,7 @@ import java.util.HashMap;
 import java.util.UUID;
 import java.util.List;
 import java.util.Map;
+import javax.swing.border.TitledBorder;
 
 public class TravelAppGUI extends JFrame {
     private User currentUser;
@@ -41,89 +33,124 @@ public class TravelAppGUI extends JFrame {
     private JTextField emailField;
     private JComboBox<String> domainComboBox;
     private JPasswordField passwordField;
-    
 
-    //connect to database
-    public TravelAppGUI(Connection connection) {
-        this.conn = connection; // Assign the provided connection from the Terhal2 class
+        // Connect to database
+        public TravelAppGUI(Connection connection) {
+            this.conn = connection; // Assign the provided connection from the Terhal2 class
 
-        setTitle("Terhal Travel App");
-        setSize(400, 300);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
+            setTitle("Terhal Travel App");
+            setSize(400, 300);
+            setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            setLocationRelativeTo(null);
+            showLoginOrRegister(); // Show login or register options
+        }
 
-        //showLoginOrRegister(); // Show login or register options
+        // Show the login or register options
+       void showLoginOrRegister() {
+        JFrame frame = new JFrame("Login or Register");
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setSize(520, 700);
+        frame.setLayout(new BorderLayout());
+        frame.getContentPane().setBackground(new Color(245, 245, 245)); // خلفية خفيفة
+
+        // رسالة الترحيب
+        JLabel welcomeLabel = new JLabel("Welcome To Terhal Application", SwingConstants.CENTER);
+        welcomeLabel.setFont(new Font("Times New Roman", Font.BOLD, 24));
+        welcomeLabel.setForeground(new Color(0, 100, 0)); // لون أخضر جذاب
+        welcomeLabel.setBorder(BorderFactory.createEmptyBorder(70, 0, 20, 0));
+        frame.add(welcomeLabel, BorderLayout.NORTH);
+
+        // إضافة JLabel للصورة
+        ImageIcon originalIcon = new ImageIcon("C:\\Users\\pc\\Downloads\\d5210dc22bac2d626247c57b324ab1e6.jpg"); // استبدل بمسار الصورة الخاص بك
+        Image scaledImage = originalIcon.getImage().getScaledInstance(520, 350, Image.SCALE_SMOOTH); // تغيير الحجم
+        JLabel imageLabel = new JLabel(new ImageIcon(scaledImage)); // إنشاء JLabel بالصورة المعدلة
+        imageLabel.setHorizontalAlignment(SwingConstants.CENTER); // محاذاة الصورة في المنتصف
+        frame.add(imageLabel, BorderLayout.CENTER); // إضافة الصورة المنتصف
+
+        JPanel buttonPanel = new JPanel(new GridLayout(4, 1));
+        buttonPanel.setBackground(new Color(245, 245, 245)); // نفس الخلفية
+        buttonPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); // هوامش للوحة
+
+        // تعيين التباعد العمودي بين الصفوف
+        ((GridLayout) buttonPanel.getLayout()).setVgap(15); // 15 بيكسل تباعد
+
+        JButton loginButton = new JButton("Login");
+        JButton registerButton = new JButton("Register");
+
+        styleButton(loginButton);
+        styleButton(registerButton);
+
+        loginButton.addActionListener(e -> {
+            frame.dispose(); // Dispose of the login/register window
+            showLogin(frame); // Show login
+        });
+
+        registerButton.addActionListener(e -> {
+            frame.dispose(); // Dispose of the login/register window
+            showRegister(frame); // Show registration
+        });
+
+        // إضافة الأزرار إلى اللوحة
+        buttonPanel.add(Box.createRigidArea(new Dimension(0, 5))); // مسافة فوق الصورة
+        buttonPanel.add(loginButton);
+        buttonPanel.add(registerButton);
+
+        frame.add(buttonPanel, BorderLayout.SOUTH); // إضافة الزر في الجزء السفلي
+        frame.setVisible(true);
     }
 
-// Show the login or register options
-void showLoginOrRegister() {
-    JFrame frame = new JFrame("Login or Register");
-    frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-    frame.setSize(400, 250);
-    frame.setLayout(new GridLayout(2, 1));
+    private void styleButton(JButton button) {
+        button.setFont(new Font("Times New Roman", Font.BOLD, 18));
+        button.setBackground(new Color(60, 179, 113));
+        button.setForeground(Color.WHITE); // لون النص أبيض
+        button.setFocusPainted(false);
+        button.setBorder(BorderFactory.createEmptyBorder(10, 25, 10, 25)); // حواف أكبر
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR)); // مؤشر اليد عند المرور
+        button.setOpaque(true);
+    }
 
-    JButton loginButton = new JButton("Login");
-    JButton registerButton = new JButton("Register");
+    private void showLogin(JFrame mainFrame) {
+        JFrame loginFrame = new JFrame("Login");
+        loginFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        loginFrame.setSize(520, 700);
+        loginFrame.setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 10, 10, 10);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
 
-    loginButton.setFont(new Font("Arial", Font.BOLD, 18));
-    registerButton.setFont(new Font("Arial", Font.BOLD, 18));
+        JLabel userLabel = new JLabel("Username:");
+        userLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+        userField = new JTextField(15);
 
-    loginButton.addActionListener(e -> {
-        frame.dispose(); // Dispose of the login/register window when moving to login
-        showLogin(frame); // Pass frame to showLogin for further handling
-    });
+        JLabel passwordLabel = new JLabel("Password:");
+        passwordLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+        passwordField = new JPasswordField(15);
+        
+        JButton submitButton = new JButton("Submit");
+        styleButton(submitButton);
 
-    registerButton.addActionListener(e -> {
-        frame.dispose(); // Dispose of the login/register window when moving to registration
-        showRegister(frame); // Pass frame to showRegister for further handling
-    });
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        loginFrame.add(userLabel, gbc);
+        gbc.gridx = 1;
+        loginFrame.add(userField, gbc);
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        loginFrame.add(passwordLabel, gbc);
+        gbc.gridx = 1;
+        loginFrame.add(passwordField, gbc);
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        gbc.gridwidth = 2;
+        loginFrame.add(submitButton, gbc);
 
-    frame.add(loginButton);
-    frame.add(registerButton);
-    frame.setVisible(true);
-}
+        submitButton.addActionListener(e -> handleLogin(loginFrame, userField.getText(), new String(passwordField.getPassword()), mainFrame));
 
-private void showLogin(JFrame mainFrame) {
-    JFrame loginFrame = new JFrame("Login");
-    loginFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-    loginFrame.setSize(400, 300);
-    loginFrame.setLayout(new GridBagLayout());
-    GridBagConstraints gbc = new GridBagConstraints();
-    gbc.insets = new Insets(10, 10, 10, 10);
-    gbc.fill = GridBagConstraints.HORIZONTAL;
+        loginFrame.getContentPane().setBackground(new Color(255, 255, 255));
+        loginFrame.setVisible(true);
+    }
 
-    JLabel userLabel = new JLabel("Username:");
-    JTextField userField = new JTextField(15);
-    //JLabel emailLabel = new JLabel("Email:");
-    //JTextField emailField = new JTextField(15);
-    JLabel passwordLabel = new JLabel("Password:");
-    JPasswordField passwordField = new JPasswordField(15);
-    JButton submitButton = new JButton("Submit");
 
-    gbc.gridx = 0;
-    gbc.gridy = 0;
-    loginFrame.add(userLabel, gbc);
-    gbc.gridx = 1;
-    loginFrame.add(userField, gbc);
-    gbc.gridx = 0;
-    gbc.gridy = 1;
-    //loginFrame.add(emailLabel, gbc);
-    gbc.gridx = 1;
-    //loginFrame.add(emailField, gbc);
-    gbc.gridx = 0;
-    gbc.gridy = 2;
-    loginFrame.add(passwordLabel, gbc);
-    gbc.gridx = 1;
-    loginFrame.add(passwordField, gbc);
-    gbc.gridx = 0;
-    gbc.gridy = 3;
-    gbc.gridwidth = 2;
-    loginFrame.add(submitButton, gbc);
-
-    submitButton.addActionListener(e -> handleLogin(loginFrame, userField.getText(), new String(passwordField.getPassword()), mainFrame));
-
-    loginFrame.setVisible(true);
-}
 
 private void handleLogin(JFrame loginFrame, String username, String password, JFrame mainFrame) {
     if (validateLogin(username, password)) {
@@ -173,76 +200,78 @@ private void handleLogin(JFrame loginFrame, String username, String password, JF
     }
 
     private void showRegister(JFrame frame) {
-        JFrame registerFrame = new JFrame("Register");
-        registerFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        registerFrame.setSize(400, 400);
-        registerFrame.setLayout(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+    JFrame registerFrame = new JFrame("Register");
+    registerFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+    registerFrame.setSize(520, 700);
+    registerFrame.setLayout(new GridBagLayout());
+    GridBagConstraints gbc = new GridBagConstraints();
+    gbc.insets = new Insets(10, 10, 10, 10);
+    gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        JLabel firstNameLabel = new JLabel("First Name:");
-        firstNameField = new JTextField(15);
-        JLabel secondNameLabel = new JLabel("Second Name:");
-        secondNameField = new JTextField(15);
-        JLabel lastNameLabel = new JLabel("Last Name:");
-        lastNameField = new JTextField(15);
-        JLabel userLabel = new JLabel("Username:");
-        userField = new JTextField(15);
-        JLabel emailLabel = new JLabel("Email:");
-        emailField = new JTextField(15);
-        JLabel domainLabel = new JLabel("Domain:");
-        String[] domains = {"@gmail.com", "@hotmail.com"};
-        domainComboBox = new JComboBox<>(domains);
-        JLabel passwordLabel = new JLabel("Password:");
-        passwordField = new JPasswordField(15);
-        JButton submitButton = new JButton("Submit");
+    JLabel firstNameLabel = new JLabel("First Name:");
+    firstNameField = new JTextField(20);
+    JLabel secondNameLabel = new JLabel("Second Name:");
+    secondNameField = new JTextField(20);
+    JLabel lastNameLabel = new JLabel("Last Name:");
+    lastNameField = new JTextField(20);
+    JLabel userLabel = new JLabel("Username:");
+    userField = new JTextField(20);
+    JLabel emailLabel = new JLabel("Email:");
+    emailField = new JTextField(20);
+    JLabel domainLabel = new JLabel("Domain:");
+    String[] domains = {"@gmail.com", "@hotmail.com"};
+    domainComboBox = new JComboBox<>(domains);
+    JLabel passwordLabel = new JLabel("Password:");
+    passwordField = new JPasswordField(20);
+    JButton submitButton = new JButton("Submit");
 
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        registerFrame.add(firstNameLabel, gbc);
-        gbc.gridx = 1;
-        registerFrame.add(firstNameField, gbc);
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        registerFrame.add(secondNameLabel, gbc);
-        gbc.gridx = 1;
-        registerFrame.add(secondNameField, gbc);
-        gbc.gridx = 0;
-        gbc.gridy = 2;
-        registerFrame.add(lastNameLabel, gbc);
-        gbc.gridx = 1;
-        registerFrame.add(lastNameField, gbc);
-        gbc.gridx = 0;
-        gbc.gridy = 3;
-        registerFrame.add(userLabel, gbc);
-        gbc.gridx = 1;
-        registerFrame.add(userField, gbc);
-        gbc.gridx = 0;
-        gbc.gridy = 4;
-        registerFrame.add(emailLabel, gbc);
-        gbc.gridx = 1;
-        registerFrame.add(emailField, gbc);
-        gbc.gridx = 0;
-        gbc.gridy = 5;
-        registerFrame.add(domainLabel, gbc);
-        gbc.gridx = 1;
-        registerFrame.add(domainComboBox, gbc);
-        gbc.gridx = 0;
-        gbc.gridy = 6;
-        registerFrame.add(passwordLabel, gbc);
-        gbc.gridx = 1;
-        registerFrame.add(passwordField, gbc);
-        gbc.gridx = 0;
-        gbc.gridy = 7;
-        gbc.gridwidth = 2;
-        registerFrame.add(submitButton, gbc);
+    // Style the submit button
+    styleButton(submitButton);
 
-        submitButton.addActionListener(e -> handleRegister(registerFrame));
+    gbc.gridx = 0;
+    gbc.gridy = 0;
+    registerFrame.add(firstNameLabel, gbc);
+    gbc.gridx = 1;
+    registerFrame.add(firstNameField, gbc);
+    gbc.gridx = 0;
+    gbc.gridy = 1;
+    registerFrame.add(secondNameLabel, gbc);
+    gbc.gridx = 1;
+    registerFrame.add(secondNameField, gbc);
+    gbc.gridx = 0;
+    gbc.gridy = 2;
+    registerFrame.add(lastNameLabel, gbc);
+    gbc.gridx = 1;
+    registerFrame.add(lastNameField, gbc);
+    gbc.gridx = 0;
+    gbc.gridy = 3;
+    registerFrame.add(userLabel, gbc);
+    gbc.gridx = 1;
+    registerFrame.add(userField, gbc);
+    gbc.gridx = 0;
+    gbc.gridy = 4;
+    registerFrame.add(emailLabel, gbc);
+    gbc.gridx = 1;
+    registerFrame.add(emailField, gbc);
+    gbc.gridx = 0;
+    gbc.gridy = 5;
+    registerFrame.add(domainLabel, gbc);
+    gbc.gridx = 1;
+    registerFrame.add(domainComboBox, gbc);
+    gbc.gridx = 0;
+    gbc.gridy = 6;
+    registerFrame.add(passwordLabel, gbc);
+    gbc.gridx = 1;
+    registerFrame.add(passwordField, gbc);
+    gbc.gridx = 0;
+    gbc.gridy = 7;
+    gbc.gridwidth = 2;
+    registerFrame.add(submitButton, gbc);
 
-        registerFrame.setVisible(true);
-    }
+    submitButton.addActionListener(e -> handleRegister(registerFrame));
 
+    registerFrame.setVisible(true);
+}
     private void handleRegister(JFrame frame) {
         String firstName = firstNameField.getText().trim();
         String secondName = secondNameField.getText().trim();
@@ -355,105 +384,120 @@ public class App extends JFrame {
     TravelPlan travelPlan;
     int tripId;
 
-    public App(TravelPlan travelPlan, int tripId) {
-        this.travelPlan = travelPlan;
-        this.tripId = tripId;
-        this.cityDailyPlans = new HashMap<>();
-        setTitle("Welcome to Terhal");
-        setSize(600, 500);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLayout(new BorderLayout(10, 10));
+public App(TravelPlan travelPlan, int tripId) {
+    this.travelPlan = travelPlan;
+    this.tripId = tripId;
+    this.cityDailyPlans = new HashMap<>();
+    setTitle("Welcome to Terhal");
+    setSize(520, 700);
+    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    setLayout(new BorderLayout(10, 10));
 
-        // Program icon
-        setIconImage(Toolkit.getDefaultToolkit().getImage("path/to/icon.png"));
+    // Program icon
+    setIconImage(Toolkit.getDefaultToolkit().getImage("path/to/icon.png"));
 
-        // Panel to display all city images
-        cityPanel = new JPanel();
-        cityPanel.setLayout(new GridLayout(0, 1, 10, 10)); // Display in a vertical list
-        cityPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+    // Create a content panel with a border
+    JPanel contentPanel = new JPanel();
+    contentPanel.setBorder(BorderFactory.createLineBorder(new Color(60, 179, 113), 2)); // Adding a lightweight border
+    contentPanel.setLayout(new BorderLayout());
 
-        // Use city names from the TravelPlan object
-        String[] cities = travelPlan.getCitynames();
-        for (String city : cities) {
-            cityPanel.add(createCityPanel(city));
+    // Title Label
+    JLabel titleLabel = new JLabel("Travel Plans", JLabel.CENTER);
+    titleLabel.setFont(new Font("Times New Roman", Font.BOLD, 27)); // Dark font
+    titleLabel.setForeground(new Color(34, 139, 34)); // Dark green color
+    contentPanel.add(titleLabel, BorderLayout.NORTH); // Add title to content panel
+
+    // Panel to display all city images
+    cityPanel = new JPanel();
+    cityPanel.setLayout(new GridLayout(0, 1, 10, 10)); // Display in a vertical list
+    cityPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+    // Use city names from the TravelPlan object
+    String[] cities = travelPlan.getCitynames();
+    for (String city : cities) {
+        cityPanel.add(createCityPanel(city));
+    }
+
+    JScrollPane scrollPane = new JScrollPane(cityPanel); // Scrollable display
+    contentPanel.add(scrollPane, BorderLayout.CENTER); // Add scroll pane to content panel
+    add(contentPanel, BorderLayout.CENTER); // Add content panel to the frame
+
+    // Button panel
+    JPanel buttonPanel = new JPanel();
+    buttonPanel.setBackground(new Color(144, 238, 144));
+
+    // "Add New Plan" button
+    JButton addNewPlanButton = new JButton("Add New Plan");
+    // Style the button using the previously defined method
+    styleButton(addNewPlanButton);
+    addNewPlanButton.addActionListener(e -> showMainInfo());
+
+    // Add buttons to the panel
+    buttonPanel.add(addNewPlanButton);
+
+    // Add button panel to the bottom of the frame
+    add(buttonPanel, BorderLayout.SOUTH);
+
+    setVisible(true);
+}
+
+private JPanel createCityPanel(String cityName) {
+    JPanel panel = new JPanel(new BorderLayout());
+
+    // Create a clickable JLabel for the city name
+    JLabel cityLabel = new JLabel(cityName, JLabel.CENTER);
+    cityLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    cityLabel.addMouseListener(new MouseAdapter() {
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            initializePlansForCity(cityName);
+            showCityDays(cityName);
         }
+    });
 
-        JScrollPane scrollPane = new JScrollPane(cityPanel); // Scrollable display
-        add(scrollPane, BorderLayout.CENTER);
+    JLabel cityImageLabel = new JLabel("", JLabel.CENTER);
+    String imagePath = getCityImagePath(cityName);
+    ImageIcon cityIcon = resizeImage(imagePath, 400, 250);
 
-        // Button panel
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.setBackground(new Color(135, 206, 235));
-
-        // "Add New Plan" button
-        JButton addNewPlanButton = new JButton("Add New Plan");
-        addNewPlanButton.setBackground(new Color(0, 102, 204));
-        addNewPlanButton.setForeground(Color.WHITE);
-        addNewPlanButton.setFont(new Font("Arial", Font.BOLD, 16));
-        addNewPlanButton.addActionListener(e -> showMainInfo());
-
-        // Add buttons to the panel
-        buttonPanel.add(addNewPlanButton);
-
-        // Add button panel to the bottom of the frame
-        add(buttonPanel, BorderLayout.SOUTH);
-
-        setVisible(true);
+    if (cityIcon != null) {
+        cityImageLabel.setIcon(cityIcon);
+    } else {
+        cityImageLabel.setText("Image not available!");
     }
 
-    private JPanel createCityPanel(String cityName) {
-        JPanel panel = new JPanel(new BorderLayout());
+    panel.add(cityLabel, BorderLayout.NORTH);
+    panel.add(cityImageLabel, BorderLayout.CENTER);
+    return panel;
+}
 
-        // Create a clickable JLabel for the city name
-        JLabel cityLabel = new JLabel(cityName, JLabel.CENTER);
-        cityLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        cityLabel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                initializePlansForCity(cityName);
-                showCityDays(cityName);
-            }
-        });
-
-        JLabel cityImageLabel = new JLabel("", JLabel.CENTER);
-        String imagePath = getCityImagePath(cityName);
-        ImageIcon cityIcon = resizeImage(imagePath, 300, 200);
-
-        if (cityIcon != null) {
-            cityImageLabel.setIcon(cityIcon);
-        } else {
-            cityImageLabel.setText("Image not available!");
-        }
-
-        panel.add(cityLabel, BorderLayout.NORTH);
-        panel.add(cityImageLabel, BorderLayout.CENTER);
-        return panel;
+private String getCityImagePath(String cityName) {
+    switch (cityName) {
+        case "Abha": return "src/Abha.jpg";
+        case "Dammam": return "src/Dammam.jpg";
+        case "Hafar Al-Batin": return "src/HafarAlBatin.jpg";
+        case "Jeddah": return "src/Jeddah.jpg";
+        case "Khamis Mushait": return "src/KhamisMushait.jpg";
+        case "Khobar": return "src/Khobar.jpg";
+        case "Medina": return "src/Medina.jpg";
+        case "Najran": return "src/Najran.jpg";
+        case "Riyadh": return "src/Riyadh.jpg";
+        case "Tabuk": return "src/Tabuk.jpg";
+        case "Makkah": return "src/Makkah.jpg";
+        default: return null;
     }
+}
 
-    private String getCityImagePath(String cityName) {
-        switch (cityName) {
-            case "Abha": return "src/Abha.jpg";
-            case "Dammam": return "src/Dammam.jpg";
-            case "Hafar Al-Batin": return "src/HafarAlBatin.jpg";
-            case "Jeddah": return "src/Jeddah.jpg";
-            case "Khamis Mushait": return "src/KhamisMushait.jpg";
-            case "Khobar": return "src/Khobar.jpg";
-            case "Medina": return "src/Medina.jpg";
-            case "Najran": return "src/Najran.jpg";
-            case "Riyadh": return "src/Riyadh.jpg";
-            case "Tabuk": return "src/Tabuk.jpg";
-            case "Makkah": return "src/Makkah.jpg";
-            default: return null;
-        }
-    }
+private ImageIcon resizeImage(String imagePath, int width, int height) {
+    ImageIcon icon = new ImageIcon(imagePath);
+    if (icon.getIconWidth() == -1) return null;
+    Image img = icon.getImage();
+    Image newImg = img.getScaledInstance(width, height, Image.SCALE_SMOOTH);
+    return new ImageIcon(newImg);
+}
 
-    private ImageIcon resizeImage(String imagePath, int width, int height) {
-        ImageIcon icon = new ImageIcon(imagePath);
-        if (icon.getIconWidth() == -1) return null;
-        Image img = icon.getImage();
-        Image newImg = img.getScaledInstance(width, height, Image.SCALE_SMOOTH);
-        return new ImageIcon(newImg);
-    }
+
+
+
 
     // Initialize plans for a specific city
     public void initializePlansForCity(String city) {
@@ -497,7 +541,7 @@ public class App extends JFrame {
 
         mainFrame = new JFrame(cityName + " - Daily Plans");
         mainFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        mainFrame.setSize(600, 400);
+        mainFrame.setSize(520, 700);
         mainFrame.setLayout(new BorderLayout());
 
         List<DailyPlan> dailyPlans = cityDailyPlans.get(cityName);
@@ -559,7 +603,7 @@ public class App extends JFrame {
             }
             mainFrame = new JFrame(day + " Plan in " + city);
             mainFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-            mainFrame.setSize(400, 500);
+            mainFrame.setSize(520, 700);
             mainFrame.setLayout(new BorderLayout());
 
             JPanel detailsPanel = new JPanel(new GridLayout(5, 1));

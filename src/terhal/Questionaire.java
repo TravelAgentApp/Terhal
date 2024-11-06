@@ -3,13 +3,6 @@ package terhal;
 
 import java.time.LocalDate;
 import java.util.List;
-//
-/**
- *
- * @author janaz
- */
-
-
 import javax.swing.*;
 import java.awt.*;
 import java.sql.Connection;
@@ -18,6 +11,7 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import javax.swing.border.TitledBorder;
 
 
 public class Questionaire {
@@ -52,9 +46,9 @@ public class Questionaire {
     boolean isVisible =false;
     
     double  flight_p;
-      double  restaurant_p;
-       double activity_p;
-      double  hotel_p;
+    double  restaurant_p;
+    double activity_p;
+    double  hotel_p;
 
     private Connection conn; // Database connection
 
@@ -153,11 +147,26 @@ public class Questionaire {
 public void showMainInfo() {
     JFrame frame = new JFrame("Main Information");
     frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-    frame.setSize(500, 500);
-    frame.setLayout(new GridBagLayout());
+    frame.setSize(520, 700);
+    frame.setLayout(new BorderLayout());
+    frame.getContentPane().setBackground(new Color(220, 255, 220));
 
-    // Change background color
-    frame.getContentPane().setBackground(Color.decode("#f0f8ff"));
+    // Add a border to the main frame
+    frame.getRootPane().setBorder(BorderFactory.createMatteBorder(5, 5, 5, 5, new Color(34, 139, 34)));
+
+    // Create a header label
+    JLabel headerLabel = new JLabel("Main Information");
+    headerLabel.setFont(new Font("Times New Roman", Font.BOLD, 24));
+    headerLabel.setForeground(new Color(34, 139, 34));
+    headerLabel.setHorizontalAlignment(SwingConstants.CENTER);
+    headerLabel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5)); // Add padding to the header
+
+    frame.add(headerLabel, BorderLayout.NORTH);
+
+    // Content panel with a softer border
+    JPanel contentPanel = new JPanel(new GridBagLayout());
+    contentPanel.setBackground(new Color(220, 255, 220));
+    contentPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(new Color(60, 179, 113)), "Please Fill the Details", TitledBorder.CENTER, TitledBorder.TOP, new Font("Times New Roman", Font.BOLD, 16), new Color(34, 139, 34)));
 
     GridBagConstraints gbc = new GridBagConstraints();
     gbc.insets = new Insets(10, 10, 10, 10);
@@ -165,11 +174,10 @@ public void showMainInfo() {
     gbc.gridx = 0;
     gbc.gridy = 0;
 
-    // Budget
     JLabel budgetLabel = new JLabel("Budget:");
-    budgetLabel.setFont(new Font("Arial", Font.BOLD, 14));
-    budgetLabel.setForeground(Color.decode("#000080"));
-    frame.add(budgetLabel, gbc);
+    budgetLabel.setFont(new Font("Times New Roman", Font.BOLD, 14));
+    budgetLabel.setForeground(new Color(34, 139, 34));
+    contentPanel.add(budgetLabel, gbc);
 
     String[] budgetOptions = {
             "500-1000", "1000-5000", "5000-10000", "10000-100000",
@@ -178,21 +186,19 @@ public void showMainInfo() {
     JComboBox<String> budgetCombo = new JComboBox<>(budgetOptions);
     budgetCombo.setEditable(true);
     gbc.gridx = 1;
-    frame.add(budgetCombo, gbc);
+    contentPanel.add(budgetCombo, gbc);
 
-    // Custom budget input
     JTextField customBudgetField = new JTextField(10);
     customBudgetField.setVisible(false);
     gbc.gridx = 2;
-    frame.add(customBudgetField, gbc);
+    contentPanel.add(customBudgetField, gbc);
 
-    // Number of Travelers
     JLabel travelersLabel = new JLabel("Number of Members:");
-    travelersLabel.setFont(new Font("Arial", Font.BOLD, 14));
-    travelersLabel.setForeground(Color.decode("#000080"));
+    travelersLabel.setFont(new Font("Times New Roman", Font.BOLD, 14));
+    travelersLabel.setForeground(new Color(34, 139, 34));
     gbc.gridx = 0;
     gbc.gridy++;
-    frame.add(travelersLabel, gbc);
+    contentPanel.add(travelersLabel, gbc);
 
     String[] travelersOptions = new String[20];
     for (int i = 0; i < 20; i++) {
@@ -201,15 +207,14 @@ public void showMainInfo() {
     JComboBox<String> travelersCombo = new JComboBox<>(travelersOptions);
     travelersCombo.setEditable(true);
     gbc.gridx = 1;
-    frame.add(travelersCombo, gbc);
+    contentPanel.add(travelersCombo, gbc);
 
-    // Travel Duration
     JLabel durationLabel = new JLabel("Travel Duration:");
-    durationLabel.setFont(new Font("Arial", Font.BOLD, 14));
-    durationLabel.setForeground(Color.decode("#000080"));
+    durationLabel.setFont(new Font("Times New Roman", Font.BOLD, 14));
+    durationLabel.setForeground(new Color(34, 139, 34));
     gbc.gridx = 0;
     gbc.gridy++;
-    frame.add(durationLabel, gbc);
+    contentPanel.add(durationLabel, gbc);
 
     JPanel durationPanel = new JPanel(new FlowLayout());
     String[] durationOptions = new String[30];
@@ -222,32 +227,28 @@ public void showMainInfo() {
     durationPanel.add(durationCombo);
     durationPanel.add(durationUnitCombo);
     gbc.gridx = 1;
-    frame.add(durationPanel, gbc);
+    contentPanel.add(durationPanel, gbc);
 
-    // Travel Date
     JLabel travelDateLabel = new JLabel("Travel Date:");
-    travelDateLabel.setFont(new Font("Arial", Font.BOLD, 14));
-    travelDateLabel.setForeground(Color.decode("#000080"));
+    travelDateLabel.setFont(new Font("Times New Roman", Font.BOLD, 14));
+    travelDateLabel.setForeground(new Color(34, 139, 34));
     gbc.gridx = 0;
     gbc.gridy++;
-    frame.add(travelDateLabel, gbc);
+    contentPanel.add(travelDateLabel, gbc);
 
-    // Panel for date selection
     JPanel datePanel = new JPanel(new GridBagLayout());
     GridBagConstraints dateGbc = new GridBagConstraints();
     dateGbc.insets = new Insets(5, 5, 5, 5);
     dateGbc.fill = GridBagConstraints.HORIZONTAL;
 
-    // Days selection
-   
-    String[] days = new String[31];  // Set to 31 days
+    String[] days = new String[31];
     for (int i = 0; i < 31; i++) {
         if (i < 9) {
-            days[i] = "0" + (i + 1); // Leading zero for single-digit days (01-09)
-    }   else {
-            days[i] = String.valueOf(i + 1); // Day 10 onwards
+            days[i] = "0" + (i + 1);
+        } else {
+            days[i] = String.valueOf(i + 1);
+        }
     }
-}
 
     JComboBox<String> dayCombo = new JComboBox<>(days);
     dateGbc.gridx = 0;
@@ -256,7 +257,6 @@ public void showMainInfo() {
     dateGbc.gridx = 1;
     datePanel.add(dayCombo, dateGbc);
 
-    // Months selection
     String[] months = {"01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"};
     JComboBox<String> monthCombo = new JComboBox<>(months);
     dateGbc.gridx = 0;
@@ -265,7 +265,6 @@ public void showMainInfo() {
     dateGbc.gridx = 1;
     datePanel.add(monthCombo, dateGbc);
 
-    // Years selection (Only Gregorian calendar)
     JComboBox<String> yearCombo = new JComboBox<>();
     for (int i = 2024; i <= 2050; i++) {
         yearCombo.addItem(String.valueOf(i));
@@ -276,17 +275,15 @@ public void showMainInfo() {
     dateGbc.gridx = 1;
     datePanel.add(yearCombo, dateGbc);
 
-    // Add date panel to the main frame
     gbc.gridx = 1;
-    frame.add(datePanel, gbc);
+    contentPanel.add(datePanel, gbc);
 
-    // Travel Purpose
     JLabel purposeLabel = new JLabel("Travel Purpose:");
-    purposeLabel.setFont(new Font("Arial", Font.BOLD, 14));
-    purposeLabel.setForeground(Color.decode("#000080"));
+    purposeLabel.setFont(new Font("Times New Roman", Font.BOLD, 14));
+    purposeLabel.setForeground(new Color(34, 139, 34));
     gbc.gridx = 0;
     gbc.gridy++;
-    frame.add(purposeLabel, gbc);
+    contentPanel.add(purposeLabel, gbc);
 
     String[] purposes = {
             "Select", "Study", "Photography", "Work", "Medical Treatment", "Leisure",
@@ -295,38 +292,31 @@ public void showMainInfo() {
     };
     JComboBox<String> purposeCombo = new JComboBox<>(purposes);
     gbc.gridx = 1;
-    frame.add(purposeCombo, gbc);
+    contentPanel.add(purposeCombo, gbc);
 
-    // Update visibility for custom budget input
     budgetCombo.addActionListener(e -> {
         customBudgetField.setVisible("Other".equals(budgetCombo.getSelectedItem()));
         frame.revalidate();
         frame.repaint();
     });
 
-    // Adding a separator
     JSeparator separator = new JSeparator();
     separator.setForeground(Color.GRAY);
     gbc.gridx = 0;
     gbc.gridy++;
     gbc.gridwidth = 2;
-    frame.add(separator, gbc);
+    contentPanel.add(separator, gbc);
     gbc.gridwidth = 1;
 
-    // Next Button
     JButton nextButton = new JButton("Next");
-    nextButton.setPreferredSize(new Dimension(80, 30));
-    nextButton.setBackground(Color.decode("#555555"));
-    nextButton.setForeground(Color.WHITE);
+    styleButton(nextButton);
     gbc.gridx = 1;
     gbc.gridy++;
-    frame.add(nextButton, gbc);
+    contentPanel.add(nextButton, gbc);
 
-    // Button Action
     nextButton.addActionListener(e -> {
         boolean validInput = true;
 
-        // Validate budget
         String selectedBudget = (String) budgetCombo.getSelectedItem();
         if (selectedBudget.trim().isEmpty() || ("Other".equals(selectedBudget) && customBudgetField.getText().trim().isEmpty())) {
             JOptionPane.showMessageDialog(frame, "Please enter a budget.", "Input Error", JOptionPane.ERROR_MESSAGE);
@@ -344,7 +334,6 @@ public void showMainInfo() {
             maxBudget = Double.parseDouble(selectedBudget.split("-")[1]);
         }
 
-        // Validate number of travelers
         String selectedTravelers = (String) travelersCombo.getSelectedItem();
         if (selectedTravelers == null || selectedTravelers.trim().isEmpty()) {
             JOptionPane.showMessageDialog(frame, "Please select the number of members.", "Input Error", JOptionPane.ERROR_MESSAGE);
@@ -353,7 +342,6 @@ public void showMainInfo() {
             numMembers = Integer.parseInt(selectedTravelers);
         }
 
-        // Validate travel duration
         String selectedDuration = (String) durationCombo.getSelectedItem();
         if (selectedDuration == null || selectedDuration.trim().isEmpty()) {
             JOptionPane.showMessageDialog(frame, "Please select the travel duration.", "Input Error", JOptionPane.ERROR_MESSAGE);
@@ -363,59 +351,69 @@ public void showMainInfo() {
             travelDurationUnit = (String) durationUnitCombo.getSelectedItem();
         }
 
-        // Validate travel date
         travelDay = (String) dayCombo.getSelectedItem();
         travelMonth = (String) monthCombo.getSelectedItem();
         travelYear = (String) yearCombo.getSelectedItem();
         StartDateParse(travelDay, travelMonth, travelYear);
 
-        // Validate travel purpose
         travelPurpose = (String) purposeCombo.getSelectedItem();
         if ("Select".equals(travelPurpose)) {
             JOptionPane.showMessageDialog(frame, "Please select a travel purpose.", "Input Error", JOptionPane.ERROR_MESSAGE);
             validInput = false;
         }
 
-        // If all inputs are valid, proceed to preferences
         if (validInput) {
-            savePreferencesToDatabase1();
-            frame.dispose(); // Close the main info frame
-            showPreferences(); // Show preferences window
+            frame.dispose();
+            showPreferences();
         }
     });
 
-    // Show frame
+    frame.add(contentPanel, BorderLayout.CENTER);
     frame.setVisible(true);
 }
 
+public void showPreferences() {
+    JFrame frame = new JFrame("Preferences");
+    frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+    frame.setSize(520, 700); // Match the size of showMainInfo
+    frame.setLayout(new BorderLayout());
+    frame.getContentPane().setBackground(new Color(220, 255, 220));
 
-    public void showPreferences() {
-        JFrame frame = new JFrame("Preferences");
-        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        frame.setSize(500, 500);
-        frame.setLayout(new BorderLayout(5, 5));
+    // Add a border to the main frame
+    frame.getRootPane().setBorder(BorderFactory.createMatteBorder(5, 5, 5, 5, new Color(34, 139, 34)));
 
-        // Main panel to hold form elements
-        JPanel formPanel = new JPanel();
-        formPanel.setLayout(new GridBagLayout());
-        formPanel.setBackground(Color.decode("#f0f8ff"));
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.anchor = GridBagConstraints.WEST;
+    // Create a header label
+    JLabel headerLabel = new JLabel("User Preferences");
+    headerLabel.setFont(new Font("Times New Roman", Font.BOLD, 24));
+    headerLabel.setForeground(new Color(34, 139, 34));
+    headerLabel.setHorizontalAlignment(SwingConstants.CENTER);
+    headerLabel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5)); // Add padding to the header
 
-        // Questions for preferences
-        String[] questions = {
-            "Preferred Cuisine:",
-            "Preferred Activity:",
-            "Preferred Weather:",
-            "What hotel type do you prefer?",
-            "What flight type do you prefer?",
-            "Do you have a specific Destination to visit in Saudi Arabia?"
-        };
+    frame.add(headerLabel, BorderLayout.NORTH);
 
-        // Options for each question
-       String[][] options = {
+    // Content panel with a softer border
+    JPanel formPanel = new JPanel();
+    formPanel.setLayout(new GridBagLayout());
+    formPanel.setBackground(new Color(220, 255, 220));
+    formPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(new Color(60, 179, 113)), "Please Fill Your Preferences", TitledBorder.CENTER, TitledBorder.TOP, new Font("Times New Roman", Font.BOLD, 16), new Color(34, 139, 34)));
+
+    GridBagConstraints gbc = new GridBagConstraints();
+    gbc.insets = new Insets(10, 10, 10, 10);
+    gbc.fill = GridBagConstraints.HORIZONTAL;
+    gbc.anchor = GridBagConstraints.WEST;
+
+    // Questions for preferences
+    String[] questions = {
+        "Preferred Cuisine:",
+        "Preferred Activity:",
+        "Preferred Weather:",
+        "What hotel type do you prefer?",
+        "What flight type do you prefer?",
+        "Do you have a specific Destination to visit in Saudi Arabia?"
+    };
+
+    // Options for each question
+    String[][] options = {
         {"Select", "Italian", "Chinese", "Indian", "Mexican", "American", "French", 
          "Japanese", "Thai", "Spanish", "Greek", "Lebanese", "Turkish", 
          "Vietnamese", "Korean", "Mediterranean", "Brazilian", "Caribbean"},
@@ -427,86 +425,67 @@ public void showMainInfo() {
         {"Select", "Standard", "Luxury"},
         {"Select", "Standard", "Luxury"},
         {"Select", "Yes", "No"}
-        };
+    };
 
-        JComboBox<String>[] preferenceCombos = new JComboBox[questions.length];
+    JComboBox<String>[] preferenceCombos = new JComboBox[questions.length];
 
-        // Loop through the questions and add them to the form panel
-        for (int i = 0; i < questions.length; i++) {
-            final int index = i;
-            JLabel questionLabel = new JLabel(questions[i]);
-            questionLabel.setForeground(Color.decode("#000080"));
-            preferenceCombos[i] = new JComboBox<>(options[i]);
+    // Loop through the questions and add them to the form panel
+    for (int i = 0; i < questions.length; i++) {
+        final int index = i;
+        JLabel questionLabel = new JLabel(questions[i]);
+        questionLabel.setForeground(new Color(34, 139, 34));
+        preferenceCombos[i] = new JComboBox<>(options[i]);
 
-            gbc.gridx = 0;
-            gbc.gridy = i;
-            formPanel.add(questionLabel, gbc);
-
-            gbc.gridx = 1;
-            formPanel.add(preferenceCombos[i], gbc);
-        }
-
-        // Country list
-        JLabel countryLabel = new JLabel("Select a City:");
-        countryLabel.setForeground(Color.decode("#000080"));
-        JComboBox<String> countryCombo = new JComboBox<>(new String[]  {
-    "Select", "Riyadh", "Jeddah", "Mecca", "Medina", "Dammam", "Khobar", "Tabuk", 
-    "Hail", "Abha", "Jizan", "Najran", "Al-Qassim", "Taif"
-    });
-
-        // Initially hide the country selection combo box
-        countryLabel.setVisible(false);
-        countryCombo.setVisible(false);
-
-        // Show or hide the country selection based on the user's answer to "Do you have a specific country in mind?"
-// Show or hide the country selection based on the user's answer to "Do you have a specific Destination to visit in Saudi Arabia?"
-preferenceCombos[5].addActionListener(e -> {
-    isVisible = "Yes".equals(preferenceCombos[5].getSelectedItem());
-    countryLabel.setVisible(isVisible);
-    countryCombo.setVisible(isVisible);
-    frame.revalidate();
-    frame.repaint();
-    
-    // Reset city when "No" is selected or no city is chosen yet
-    if (!isVisible) {
-        city = null;  // Reset city if "No" is selected
-    }
-});
-
-// Add a listener to countryCombo to update `city` only when a valid city is selected
-countryCombo.addActionListener(e -> {
-    String selectedCity = (String) countryCombo.getSelectedItem();
-    if (!"Select".equals(selectedCity)) {
-        city = selectedCity;
-        System.out.println("Selected city: " + city);  // Debug output to confirm selection
-    }
-});
-
-        // Add country selection components to the form
-        gbc.gridy = questions.length;
         gbc.gridx = 0;
-        formPanel.add(countryLabel, gbc);
+        gbc.gridy = i;
+        formPanel.add(questionLabel, gbc);
 
         gbc.gridx = 1;
-        formPanel.add(countryCombo, gbc);
+        formPanel.add(preferenceCombos[i], gbc);
+    }
 
-        // Back Button
-        JButton backButton = new JButton("Back");
-        backButton.setPreferredSize(new Dimension(100, 30));
-        backButton.setBackground(Color.decode("#ff6347"));
-        backButton.setForeground(Color.WHITE);
-        
-        backButton.addActionListener(e -> {
-            frame.dispose();
-            showMainInfo(); // Go back to main info without losing answers
-        });
+    // Country list
+    JLabel countryLabel = new JLabel("Select a City:");
+    countryLabel.setForeground(new Color(34, 139, 34));
+    JComboBox<String> countryCombo = new JComboBox<>(new String[] {
+        "Select", "Riyadh", "Jeddah", "Mecca", "Medina", "Dammam", "Khobar", "Tabuk", 
+        "Hail", "Abha", "Jizan", "Najran", "Al-Qassim", "Taif"
+    });
 
-        // Submit Button
-        JButton submitButton = new JButton("continue");
-        submitButton.setPreferredSize(new Dimension(100, 30));
-        submitButton.setBackground(Color.decode("#32cd32"));
-        submitButton.setForeground(Color.WHITE);
-        
+    // Initially hide the country selection combo box
+    countryLabel.setVisible(false);
+    countryCombo.setVisible(false);
+
+    // Show or hide the country selection based on the user's answer to "Do you have a specific country in mind?"
+    preferenceCombos[5].addActionListener(e -> {
+        boolean isVisible = "Yes".equals(preferenceCombos[5].getSelectedItem());
+        countryLabel.setVisible(isVisible);
+        countryCombo.setVisible(isVisible);
+        frame.revalidate();
+        frame.repaint();
+    });
+
+    // Add country selection components to the form
+    gbc.gridy = questions.length;
+    gbc.gridx = 0;
+    formPanel.add(countryLabel, gbc);
+
+    gbc.gridx = 1;
+    formPanel.add(countryCombo, gbc);
+
+    // Back Button
+    JButton backButton = new JButton("Back");
+    styleButton(backButton);
+
+    backButton.addActionListener(e -> {
+        frame.dispose();
+        showMainInfo(); // Go back to main info without losing answers
+    });
+
+    // Submit Button
+    JButton submitButton = new JButton("Continue");
+    styleButton(submitButton);
+
     submitButton.addActionListener(e -> {
         // Validate user selections
         boolean validInput = true;
@@ -537,17 +516,9 @@ countryCombo.addActionListener(e -> {
         cuisinePreference = (String) preferenceCombos[0].getSelectedItem(); // Cuisine preference
         hotelPreference = (String) preferenceCombos[3].getSelectedItem(); // Hotel preference
         flightPreference = (String) preferenceCombos[4].getSelectedItem(); // Flight preference
-        //country = (String) countryCombo.getSelectedItem(); // Selected country (if applicable)
-        
-        
         
         // Save the user preferences to the database
         savePreferencesToDatabase();
-        
-        budgetSplit(flightPreference, hotelPreference);
-        calcAvgbudget (minBudget, maxBudget);
-        calcflightBudget( avgBudget, flight_p);
-        saveCitiestoDB();
 
         // Show confirmation dialog
         JOptionPane.showMessageDialog(frame, "Preferences saved successfully!");
@@ -556,19 +527,33 @@ countryCombo.addActionListener(e -> {
         frame.dispose();
     });
 
-        // Adding buttons to a panel at the bottom
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 5));
-        buttonPanel.setBackground(Color.decode("#f0f8ff"));
-        buttonPanel.add(backButton);
-        buttonPanel.add(submitButton);
+    // Adding buttons to a panel at the bottom
+    JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 5));
+    buttonPanel.setBackground(new Color(220, 255, 220));
+    buttonPanel.add(backButton);
+    buttonPanel.add(submitButton);
 
-        // Add form panel and button panel to the frame
-        frame.add(formPanel, BorderLayout.CENTER);
-        frame.add(buttonPanel, BorderLayout.SOUTH);
+    // Add form panel and button panel to the frame
+    frame.add(formPanel, BorderLayout.CENTER);
+    frame.add(buttonPanel, BorderLayout.SOUTH);
 
-        // Set the frame visible
-        frame.setVisible(true);
-    }
+    // Set the frame visible
+    frame.setVisible(true);
+}
+
+// دالة لتنسيق الأزرار
+private void styleButton(JButton button) {
+    button.setFont(new Font("Times New Roman", Font.BOLD, 18));
+    button.setBackground(new Color(60, 179, 113));
+    button.setForeground(Color.WHITE);
+    button.setFocusPainted(false);
+    button.setBorder(BorderFactory.createEmptyBorder(10, 25, 10, 25));
+    button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+    button.setOpaque(true);
+}
+
+
+
 
     // Method to save user preferences to the database
 private void savePreferencesToDatabase() {
@@ -817,6 +802,8 @@ if (countryId > 0) {  // Assume 0 means invalid or non-existent
     
    }
   
+
+
 }
    
    
