@@ -33,6 +33,7 @@ public class TravelAppGUI extends JFrame {
     private JTextField emailField;
     private JComboBox<String> domainComboBox;
     private JPasswordField passwordField;
+    String userId;
 
         // Connect to database
         public TravelAppGUI(Connection connection) {
@@ -42,7 +43,11 @@ public class TravelAppGUI extends JFrame {
             setSize(400, 300);
             setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             setLocationRelativeTo(null);
-            showLoginOrRegister(); // Show login or register options
+            //showLoginOrRegister(); // Show login or register options
+        }
+        public TravelAppGUI(Connection connection, String userId) {
+           this.userId = userId;
+           this.conn = connection;
         }
 
         // Show the login or register options
@@ -366,7 +371,7 @@ private void handleLogin(JFrame loginFrame, String username, String password, JF
        
     }
     
-    void showPlansPage(){
+    public void showPlansPage(){
          // Launch the questionnaire to gather user preferences
         Questionaire Questionaire = new Questionaire(conn,currentUser.getUserId() );
         //call travel plan and take the userid as the constructor
@@ -375,6 +380,14 @@ private void handleLogin(JFrame loginFrame, String username, String password, JF
         //TravelPlanner travelPlanner = new TravelPlanner(TravelPlan);
     }
 
+      public void showPlansPageafterAddNew(){
+         // Launch the questionnaire to gather user preferences
+        Questionaire Questionaire = new Questionaire(conn,userId );
+        //call travel plan and take the userid as the constructor
+        TravelPlan TravelPlan = new TravelPlan(Questionaire.getcityNames(userId),userId,Questionaire.getTripIdByUserId(userId), conn);
+        App DisplayHome = new App (TravelPlan, Questionaire.getTripIdByUserId(userId));
+        //TravelPlanner travelPlanner = new TravelPlanner(TravelPlan);
+    }
 
 
 public class App extends JFrame {
@@ -430,7 +443,13 @@ public App(TravelPlan travelPlan, int tripId) {
     JButton addNewPlanButton = new JButton("Add New Plan");
     // Style the button using the previously defined method
     styleButton(addNewPlanButton);
-    addNewPlanButton.addActionListener(e -> showMainInfo());
+addNewPlanButton.addActionListener(new ActionListener() {
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        showMainInfo();
+        dispose();
+    }
+});
 
     // Add buttons to the panel
     buttonPanel.add(addNewPlanButton);

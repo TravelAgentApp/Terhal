@@ -363,10 +363,12 @@ public void showMainInfo() {
             validInput = false;
         }
 
-        if (validInput) {
-            frame.dispose();
-            showPreferences();
-        }
+        if(validInput) {	
+	 savePreferencesToDatabase1();
+	 frame.dispose(); // Close the main info frame
+	 showPreferences(); // Show preferences window
+	 }
+
     });
 
     frame.add(contentPanel, BorderLayout.CENTER);
@@ -453,18 +455,63 @@ public void showPreferences() {
         "Hail", "Abha", "Jizan", "Najran", "Al-Qassim", "Taif"
     });
 
-    // Initially hide the country selection combo box
     countryLabel.setVisible(false);
-    countryCombo.setVisible(false);
 
-    // Show or hide the country selection based on the user's answer to "Do you have a specific country in mind?"
-    preferenceCombos[5].addActionListener(e -> {
-        boolean isVisible = "Yes".equals(preferenceCombos[5].getSelectedItem());
-        countryLabel.setVisible(isVisible);
-        countryCombo.setVisible(isVisible);
-        frame.revalidate();
-        frame.repaint();
-    });
+ countryCombo.setVisible(false);
+
+ // Show or hide the country selection based on the user's answer to "Do you have a specific country in mind?"
+
+// Show or hide the country selection based on the user's answer to "Do you have a specific Destination to visit in Saudi Arabia?"
+
+preferenceCombos[5].addActionListener(e-> {
+
+ isVisible= "Yes".equals(preferenceCombos[5].getSelectedItem());
+
+ countryLabel.setVisible(isVisible);
+
+ countryCombo.setVisible(isVisible);
+
+ frame.revalidate();
+
+ frame.repaint();
+
+ // Reset city when "No" is selected or no city is chosen yet
+
+ if(!isVisible) {
+
+ city= null; // Reset city if "No" is selected
+
+ }
+
+});
+
+
+countryCombo.addActionListener(e-> {
+
+
+
+ String selectedCity = (String) countryCombo.getSelectedItem();
+
+
+
+ if (!"Select".equals(selectedCity)) {
+
+
+
+ city = selectedCity;
+
+
+
+ System.out.println("Selected city: " + city); // Debug output to confirm selection
+
+
+
+ }
+
+
+
+});
+
 
     // Add country selection components to the form
     gbc.gridy = questions.length;
@@ -519,13 +566,33 @@ public void showPreferences() {
         flightPreference = (String) preferenceCombos[4].getSelectedItem(); // Flight preference
         
         // Save the user preferences to the database
-        savePreferencesToDatabase();
+        
+
+ savePreferencesToDatabase();
+
+
+
+ budgetSplit(flightPreference, hotelPreference);
+
+
+
+ calcAvgbudget(minBudget, maxBudget);
+
+
+
+ calcflightBudget( avgBudget, flight_p);
+
+
+
+ saveCitiestoDB();
 
         // Show confirmation dialog
         JOptionPane.showMessageDialog(frame, "Preferences saved successfully!");
 
         // Close the preferences frame
         frame.dispose();
+        TravelAppGUI Homepage = new TravelAppGUI (conn, userId);
+        Homepage.showPlansPageafterAddNew();
     });
 
     // Adding buttons to a panel at the bottom
