@@ -2,6 +2,7 @@
 package terhal;
 
 
+
 import java.time.LocalDate;
 import java.util.List;
 import javax.swing.*;
@@ -13,6 +14,12 @@ import java.time.LocalDate;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import javax.swing.border.TitledBorder;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement; // Required for Statement.RETURN_GENERATED_KEYS
+
 
 
 public class Questionaire {
@@ -21,6 +28,7 @@ public class Questionaire {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
     // Class attributes to store user preferences
+    int tripID;
     private int tripId; // Primary key
     private String userId; // Foreign key referencing User
     private String purpose; // Purpose of the trip
@@ -364,7 +372,8 @@ public void showMainInfo() {
         }
 
         if(validInput) {	
-	 savePreferencesToDatabase1();
+	savePreferencesToDatabase1();
+         
 	 frame.dispose(); // Close the main info frame
 	 showPreferences(); // Show preferences window
 	 }
@@ -568,7 +577,7 @@ countryCombo.addActionListener(e-> {
         // Save the user preferences to the database
         
 
- savePreferencesToDatabase();
+savePreferencesToDatabase2();
 
 
 
@@ -624,7 +633,7 @@ private void styleButton(JButton button) {
 
 
     // Method to save user preferences to the database
-private void savePreferencesToDatabase() {
+private void savePreferencesToDatabase2() {
     String query = "INSERT INTO trips (userId, weather_preference, activity_preference, cuisine_preference, hotel_preference, flight_preference) " +
                    "VALUES (?, ?, ?, ?, ?, ?) " +
                    "ON DUPLICATE KEY UPDATE " +

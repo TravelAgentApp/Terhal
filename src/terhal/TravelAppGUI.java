@@ -520,7 +520,7 @@ private ImageIcon resizeImage(String imagePath, int width, int height) {
 
     // Initialize plans for a specific city
     public void initializePlansForCity(String city) {
-        int travelDuration = travelPlan.getduration(tripId, currentUser.getUserId());
+        int travelDuration = travelPlan.getduration(tripId, userId);
 
         // Retrieve activities and restaurants for the city
         Map<String, List<Integer>> activitiesByTime = travelPlan.getActivitiesByTime(city);
