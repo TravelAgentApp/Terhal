@@ -1,4 +1,3 @@
-
 package terhal;
 
 import javax.swing.*;
@@ -14,16 +13,16 @@ import java.sql.SQLException;
 public class Hotel extends JFrame {
 
     private Connection conn; // الاتصال بقاعدة البيانات
+    private JFrame appWindow; // مرجع للإطار السابق (App)
 
-    public Hotel(Connection connection) {
+    public Hotel(Connection connection, JFrame appWindow) {
         this.conn = connection; // ربط الاتصال
+        this.appWindow = appWindow; // تخزين مرجع نافذة App
 
         // إعداد الإطار الرئيسي
         JFrame frame = new JFrame("Hotel Information");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        //frame.setSize(750, 900);
-                frame.setSize(600, 700);
-
+        frame.setSize(600, 700);
         frame.setResizable(true);
 
         // إعداد اللوحة الرئيسية
@@ -42,12 +41,12 @@ public class Hotel extends JFrame {
         // إعداد اللوحة لعرض الفنادق
         JPanel hotelPanel = new JPanel();
         hotelPanel.setLayout(new BoxLayout(hotelPanel, BoxLayout.Y_AXIS));
-        hotelPanel.setBackground(Color.decode("#F1F8F1"));//الخلفية خضراء 
+        hotelPanel.setBackground(Color.decode("#F1F8F1")); // الخلفية خضراء
         hotelPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
         // إعداد اللوحة العلوية
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 30, 15));
-        topPanel.setBackground(Color.decode("#66BB6A"));//الي فوق
+        topPanel.setBackground(Color.decode("#66BB6A")); // لون خلفية للوحة العلوية
         topPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
         JLabel selectLabel = new JLabel("Select City: ");
@@ -58,6 +57,42 @@ public class Hotel extends JFrame {
 
         mainPanel.add(topPanel, BorderLayout.NORTH);
         mainPanel.add(new JScrollPane(hotelPanel), BorderLayout.CENTER);
+
+        // إعداد زر "رجوع" ووضعه أسفل الواجهة
+        JButton backButton = new JButton("Back");
+        backButton.setFont(new Font("Arial", Font.PLAIN, 16)); // حجم الخط أكبر قليلاً
+        backButton.setBackground(Color.decode("#66BB6A")); // نفس اللون الأخضر
+        backButton.setForeground(Color.WHITE); // النص باللون الأبيض
+        backButton.setBorderPainted(false); // إزالة الحدود
+        backButton.setFocusPainted(false); // إزالة التركيز
+        backButton.setOpaque(true); // جعل الزر غير شفاف
+
+        // إضافة تأثيرات التمرير على الزر
+        backButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                backButton.setBackground(Color.decode("#388E3C")); // تغيير اللون عند التمرير
+            }
+
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                backButton.setBackground(Color.decode("#66BB6A")); // العودة للون الأصلي
+            }
+        });
+
+        // إضافة مستمع الأحداث للزر
+        backButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                appWindow.setVisible(true); // إظهار نافذة App
+                frame.dispose(); // إغلاق نافذة Hotel
+            }
+        });
+            // Button panel
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setBackground(new Color(144, 238, 144));
+
+        buttonPanel.add(backButton);
+        // إضافة زر "رجوع" إلى الجزء السفلي من الواجهة
+        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
 
         // إضافة وظيفة لتصفية الفنادق بناءً على المدينة المختارة
         cityComboBox.addActionListener(new ActionListener() {
@@ -118,7 +153,7 @@ public class Hotel extends JFrame {
         card.setBackground(Color.WHITE);
 
         // إعداد مسار الصورة
-        String imagePath = "/imageout/" + name + ".jpg";  // يفترض أن الصورة تحمل اسم الفندق مع امتداد .jpg
+        String imagePath = "/imageout/" + name + ".jpg"; // يفترض أن الصورة تحمل اسم الفندق مع امتداد .jpg
 
         // تحميل الصورة باستخدام getResource
         URL imageURL = Hotel.class.getResource(imagePath);
@@ -191,4 +226,3 @@ public class Hotel extends JFrame {
         return card;
     }
 }
-
