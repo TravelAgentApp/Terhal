@@ -455,18 +455,20 @@ public App(TravelPlan travelPlan, int tripId) {
     });
         styleButton(hotelL);
         hotelL.addActionListener(new ActionListener() {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            Hotel h =new Hotel(conn);
-            //showMainInfo();
-            dispose();
-        }
-    });
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        Hotel hotelWindow = new Hotel(conn, App.this); // تمرير مرجع النافذة الحالية
+        setVisible(false); // إخفاء نافذة App
+        dispose();
+
+    }
+});
+
             styleButton(FlightL);
     FlightL.addActionListener(new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e) {
-        Flight a = new Flight(conn);
+         Flight a = new Flight(conn);
             dispose();
         }
     });
