@@ -540,9 +540,6 @@ private ImageIcon resizeImage(String imagePath, int width, int height) {
 }
 
 
-
-
-
     // Initialize plans for a specific city
     public void initializePlansForCity(String city) {
         int travelDuration = travelPlan.getduration(tripId, userId);
