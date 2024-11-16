@@ -454,7 +454,6 @@ public App(TravelPlan travelPlan, int tripId) {
         }
     });
         styleButton(hotelL);
-        
         hotelL.addActionListener(new ActionListener() {
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -464,11 +463,12 @@ public App(TravelPlan travelPlan, int tripId) {
 
     }
 });
+
             styleButton(FlightL);
     FlightL.addActionListener(new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e) {
-        Flight a =new Flight();
+         Flight a = new Flight(conn);
             dispose();
         }
     });
