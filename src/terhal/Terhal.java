@@ -18,7 +18,7 @@ public class Terhal {
      */
 public static void main(String[] args) throws SQLException {
         // Assume the connection is automatically provided by NetBeans (verify with your NetBeans settings)
-        Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/travel_app?useSSL=false&serverTimezone=UTC", "root", "Janajgsz2004");
+        Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/travel_app", "root", "1234567890++Ss");
 
        SwingUtilities.invokeLater(() -> {
             TravelAppGUI appGUI = new TravelAppGUI(connection);
