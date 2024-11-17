@@ -443,6 +443,8 @@ public App(TravelPlan travelPlan, int tripId) {
     JButton hotelL = new JButton("Hotel");
     JButton addNewPlanButton = new JButton("Add New Plan");
     JButton FlightL = new JButton("Flight");
+        JButton ExploreL = new JButton("Explore");
+
 
     // Style the button using the previously defined method
     styleButton(addNewPlanButton);
@@ -463,6 +465,16 @@ public App(TravelPlan travelPlan, int tripId) {
 
     }
 });
+          styleButton(ExploreL);
+        ExploreL.addActionListener(new ActionListener() {
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        EnhancedImageViewerWithDetails Window = new EnhancedImageViewerWithDetails(); // تمرير مرجع النافذة الحالية
+        setVisible(false); // إخفاء نافذة App
+        dispose();
+
+    }
+});
 
             styleButton(FlightL);
     FlightL.addActionListener(new ActionListener() {
@@ -475,8 +487,9 @@ public App(TravelPlan travelPlan, int tripId) {
     // Add buttons to the panel
     buttonPanel.add(FlightL);
     buttonPanel.add(addNewPlanButton);
-
     buttonPanel.add(hotelL);
+        buttonPanel.add(ExploreL);
+
 
     // Add button panel to the bottom of the frame
     add(buttonPanel, BorderLayout.SOUTH);
