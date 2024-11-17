@@ -468,7 +468,7 @@ public App(TravelPlan travelPlan, int tripId) {
     FlightL.addActionListener(new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e) {
-         Flight a = new Flight(conn);
+         Flight a = new Flight(conn, App.this);
             dispose();
         }
     });
