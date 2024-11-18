@@ -18,6 +18,10 @@ public class User {
     public User() {
         this.userId = UUID.randomUUID().toString();
     }
+    
+    public User(String userId){
+        this.userId = userId;
+    }
 
     public String getUsername() {
         return Username;
