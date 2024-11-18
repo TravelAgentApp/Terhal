@@ -5,7 +5,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -14,52 +13,61 @@ public class Flight extends JFrame {
 
     private Connection conn;
     private JFrame appWindow;
+    private JPanel flightsPanel;
+    private JComboBox<String> departureComboBox;
+    private JComboBox<String> arrivalComboBox;
+    String userId;
 
-    public Flight(Connection connection, JFrame appWindow) {
+    public Flight(Connection connection, JFrame appWindow, String userId) {
         this.conn = connection;
         this.appWindow = appWindow;
+        this.userId = userId;
 
-        // إعداد واجهة البرنامج
         setTitle("Flight Information");
-        setSize(520, 700);
+        setSize(600, 700);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        // إنشاء اللوحة الرئيسية
         JPanel mainPanel = new JPanel(new BorderLayout());
         add(mainPanel);
 
-        // إعداد شريط القوائم لاختيار المدينة
         String[] cities = {"Select", "Abha", "Dammam", "Hafar Al-Batin", "Jeddah", "Khamis Mushait", "Khobar", "Makkah", "Medina", "Najran", "Riyadh", "Tabuk"};
-        JComboBox<String> cityComboBox = new JComboBox<>(cities);
-        cityComboBox.setPreferredSize(new Dimension(300, 40));
-        cityComboBox.setFont(new Font("Arial", Font.PLAIN, 14));
-        cityComboBox.setBackground(Color.decode("#FFFFFF"));
-        cityComboBox.setForeground(Color.decode("#2E7D32"));
+        departureComboBox = new JComboBox<>(cities);
+        arrivalComboBox = new JComboBox<>(getCitiesinTPlan());
 
-        // إعداد اللوحة العلوية
-        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 30, 15));
-        topPanel.setBackground(Color.decode("#66BB6A")); // لون خلفية للوحة العلوية
+        departureComboBox.setPreferredSize(new Dimension(120, 25));
+        arrivalComboBox.setPreferredSize(new Dimension(120, 25));
+        departureComboBox.setFont(new Font("Arial", Font.PLAIN, 14));
+        arrivalComboBox.setFont(new Font("Arial", Font.PLAIN, 14));
+        departureComboBox.setBackground(Color.decode("#FFFFFF"));
+        arrivalComboBox.setBackground(Color.decode("#FFFFFF"));
+        departureComboBox.setForeground(Color.decode("#2E7D32"));
+        arrivalComboBox.setForeground(Color.decode("#2E7D32"));
+
+        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 15));
+        topPanel.setBackground(Color.decode("#66BB6A"));
         topPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
-        JLabel selectLabel = new JLabel("Select City: ");
-        selectLabel.setForeground(Color.WHITE);
-        selectLabel.setFont(new Font("Arial", Font.BOLD, 18));
-        topPanel.add(selectLabel);
-        topPanel.add(cityComboBox);
+        JLabel departureLabel = new JLabel("Departure City: ");
+        departureLabel.setForeground(Color.WHITE);
+        departureLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        topPanel.add(departureLabel);
+        topPanel.add(departureComboBox);
 
-        mainPanel.add(topPanel, BorderLayout.NORTH);
+        JLabel arrivalLabel = new JLabel("Arrival City: ");
+        arrivalLabel.setForeground(Color.WHITE);
+        arrivalLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        topPanel.add(arrivalLabel);
+        topPanel.add(arrivalComboBox);
 
-        // لوحة لعرض الرحلات
-        JPanel flightsPanel = new JPanel();
+        mainPanel.add(topPanel, BorderLayout.PAGE_START);
+
+        flightsPanel = new JPanel();
         flightsPanel.setLayout(new BoxLayout(flightsPanel, BoxLayout.Y_AXIS));
         flightsPanel.setBackground(Color.WHITE);
 
-        loadFlightsFromDatabase(flightsPanel);
-
         mainPanel.add(new JScrollPane(flightsPanel), BorderLayout.CENTER);
 
-        // إعداد زر "رجوع" ووضعه أسفل الواجهة
         JButton backButton = new JButton("Back");
         backButton.setFont(new Font("Arial", Font.PLAIN, 16));
         backButton.setBackground(Color.decode("#66BB6A"));
@@ -68,7 +76,6 @@ public class Flight extends JFrame {
         backButton.setFocusPainted(false);
         backButton.setOpaque(true);
 
-        // إضافة تأثيرات التمرير على الزر
         backButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 backButton.setBackground(Color.decode("#388E3C"));
@@ -79,7 +86,6 @@ public class Flight extends JFrame {
             }
         });
 
-        // إضافة مستمع الأحداث للزر
         backButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -88,21 +94,72 @@ public class Flight extends JFrame {
             }
         });
 
-        // Button panel
         JPanel buttonPanel = new JPanel();
         buttonPanel.setBackground(new Color(144, 238, 144));
         buttonPanel.add(backButton);
 
-        // إضافة زر "رجوع" إلى الجزء السفلي من الواجهة
         mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+        departureComboBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                filterFlights();
+            }
+        });
+
+        arrivalComboBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                filterFlights();
+            }
+        });
 
         setVisible(true);
     }
-
-    private void loadFlightsFromDatabase(JPanel flightsPanel) {
-        String query = "SELECT airline, price, departure, arrival, duration FROM Flights"; // استعلام عن بيانات الرحلات
+    
+        private String[] getCitiesinTPlan() {
+    java.util.Set<String> citySet = new java.util.HashSet<>();
+    java.util.List<String> cityList = new java.util.ArrayList<>();
+    
+    String query = "SELECT City FROM travelplans WHERE userId = ?";
+    try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+        pstmt.setString(1, userId);
+        ResultSet rs = pstmt.executeQuery();
         
+        while (rs.next()) {
+            String city = rs.getString("City");
+            if (citySet.add(city)) {
+                cityList.add(city);
+            }
+        }  
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    
+    return cityList.toArray(new String[0]);
+}
+    
+
+    private void filterFlights() {
+        String departureCity = (String) departureComboBox.getSelectedItem();
+        String arrivalCity = (String) arrivalComboBox.getSelectedItem();
+
+        flightsPanel.removeAll();
+
+        if (!"Select".equals(departureCity) && !"Select".equals(arrivalCity)) {
+            loadFlightsFromDatabase(departureCity, arrivalCity);
+        }
+
+        flightsPanel.revalidate();
+        flightsPanel.repaint();
+    }
+
+    private void loadFlightsFromDatabase(String departureCity, String arrivalCity) {
+        String query = "SELECT airline, price, departure, arrival, duration FROM Flights WHERE departure = (SELECT airport_code FROM countries WHERE city = ?) AND arrival = (SELECT airport_code FROM countries WHERE city = ?)";
+
         try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setString(1, departureCity);
+            pstmt.setString(2, arrivalCity);
             ResultSet rs = pstmt.executeQuery();
 
             while (rs.next()) {
@@ -112,7 +169,6 @@ public class Flight extends JFrame {
                 String arrival = rs.getString("arrival");
                 String duration = rs.getString("duration");
 
-                // إنشاء بطاقة عرض لكل رحلة
                 flightsPanel.add(createFlightPanel(airline, price, departure, arrival, duration));
                 flightsPanel.add(Box.createVerticalStrut(10));
             }
@@ -132,7 +188,6 @@ public class Flight extends JFrame {
         panel.setPreferredSize(new Dimension(480, 80));
         panel.setMaximumSize(new Dimension(480, 80));
 
-        // العنوان والسعر
         JLabel airlineLabel = new JLabel(airline, SwingConstants.LEFT);
         airlineLabel.setFont(new Font("Arial", Font.BOLD, 14));
 
@@ -173,10 +228,4 @@ public class Flight extends JFrame {
 
         return panel;
     }
-
-//    // كود لاختبار العرض
-//    public static void main(String[] args) throws SQLException {
-//        Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/travel_app", "root", "123456");
-//        SwingUtilities.invokeLater(() -> new Flight(conn, null));
-//    }
 }
