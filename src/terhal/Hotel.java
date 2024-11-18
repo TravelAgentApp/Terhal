@@ -14,10 +14,12 @@ public class Hotel extends JFrame {
 
     private Connection conn; // الاتصال بقاعدة البيانات
     private JFrame appWindow; // مرجع للإطار السابق (App)
+    String userId;
 
-    public Hotel(Connection connection, JFrame appWindow) {
+    public Hotel(Connection connection, JFrame appWindow, String userId) {
         this.conn = connection; // ربط الاتصال
         this.appWindow = appWindow; // تخزين مرجع نافذة App
+        this.userId = userId;
 
         // إعداد الإطار الرئيسي
         JFrame frame = new JFrame("Hotel Information");
@@ -32,7 +34,7 @@ public class Hotel extends JFrame {
 
         // إعداد شريط القوائم لاختيار المدينة
         String[] cities = {"Select", "Abha", "Dammam", "Hafar Al-Batin", "Jeddah", "Khamis Mushait", "Khobar", "Makkah", "Medina", "Najran", "Riyadh", "Tabuk"};
-        JComboBox<String> cityComboBox = new JComboBox<>(cities);
+        JComboBox<String> cityComboBox = new JComboBox<>(getCitiesinTPlan());
         cityComboBox.setPreferredSize(new Dimension(300, 40));
         cityComboBox.setFont(new Font("Arial", Font.PLAIN, 14));
         cityComboBox.setBackground(Color.decode("#FFFFFF"));
@@ -141,6 +143,27 @@ public class Hotel extends JFrame {
         }
     }
 
+     private String[] getCitiesinTPlan() {
+        java.util.Set<String> citySet = new java.util.HashSet<>();
+        java.util.List<String> cityList = new java.util.ArrayList<>();
+
+        String query = "SELECT City FROM travelplans WHERE userId = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setString(1, userId);
+            ResultSet rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                String city = rs.getString("City");
+                if (citySet.add(city)) {
+                    cityList.add(city);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return cityList.toArray(new String[0]);
+    }
     // طريقة لإنشاء بطاقة الفندق
     private JPanel createHotelCard(String name, String location, double price, String hotelClassValue, double rating, String amenities) {
         JPanel card = new JPanel();

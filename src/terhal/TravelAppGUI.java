@@ -463,7 +463,7 @@ public App(TravelPlan travelPlan, int tripId) {
         hotelL.addActionListener(new ActionListener() {
     @Override
     public void actionPerformed(ActionEvent e) {
-        Hotel hotelWindow = new Hotel(conn, App.this); // تمرير مرجع النافذة الحالية
+        Hotel hotelWindow = new Hotel(conn, App.this,currentUser.getUserId() ); // تمرير مرجع النافذة الحالية
         setVisible(false); // إخفاء نافذة App
         dispose();
 
