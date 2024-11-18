@@ -460,8 +460,8 @@ public void showPreferences() {
     JLabel countryLabel = new JLabel("Select a City:");
     countryLabel.setForeground(new Color(34, 139, 34));
     JComboBox<String> countryCombo = new JComboBox<>(new String[] {
-        "Select", "Riyadh", "Jeddah", "Mecca", "Medina", "Dammam", "Khobar", "Tabuk", 
-        "Hail", "Abha", "Jizan", "Najran", "Al-Qassim", "Taif"
+        "Select", "Riyadh", "Jeddah", "Makkah", "Medina", "Dammam", "Khobar", "Tabuk", 
+         "Abha", "Hafar Al-Batin", "Najran", "Khamis Mushait"
     });
 
     countryLabel.setVisible(false);
