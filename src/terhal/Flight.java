@@ -31,7 +31,7 @@ public class Flight extends JFrame {
         JPanel mainPanel = new JPanel(new BorderLayout());
         add(mainPanel);
 
-        String[] cities = {"Select", "Abha", "Dammam", "Hafar Al-Batin", "Jeddah", "Khamis Mushait", "Khobar", "Makkah", "Medina", "Najran", "Riyadh", "Tabuk"};
+        String[] cities = {"Select", "Abha", "Dammam", "Hafar Al-Batin", "Jeddah", "Khamis Mushait", "Khobar", "Medina", "Najran", "Riyadh", "Tabuk"};
         departureComboBox = new JComboBox<>(cities);
         arrivalComboBox = new JComboBox<>(getCitiesinTPlan());
 
@@ -116,29 +116,28 @@ public class Flight extends JFrame {
 
         setVisible(true);
     }
-    
-        private String[] getCitiesinTPlan() {
-    java.util.Set<String> citySet = new java.util.HashSet<>();
-    java.util.List<String> cityList = new java.util.ArrayList<>();
-    
-    String query = "SELECT City FROM travelplans WHERE userId = ?";
-    try (PreparedStatement pstmt = conn.prepareStatement(query)) {
-        pstmt.setString(1, userId);
-        ResultSet rs = pstmt.executeQuery();
-        
-        while (rs.next()) {
-            String city = rs.getString("City");
-            if (citySet.add(city)) {
-                cityList.add(city);
+
+    private String[] getCitiesinTPlan() {
+        java.util.Set<String> citySet = new java.util.HashSet<>();
+        java.util.List<String> cityList = new java.util.ArrayList<>();
+
+        String query = "SELECT City FROM travelplans WHERE userId = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setString(1, userId);
+            ResultSet rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                String city = rs.getString("City");
+                if (citySet.add(city)) {
+                    cityList.add(city);
+                }
             }
-        }  
-    } catch (SQLException e) {
-        e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return cityList.toArray(new String[0]);
     }
-    
-    return cityList.toArray(new String[0]);
-}
-    
 
     private void filterFlights() {
         String departureCity = (String) departureComboBox.getSelectedItem();
@@ -155,7 +154,7 @@ public class Flight extends JFrame {
     }
 
     private void loadFlightsFromDatabase(String departureCity, String arrivalCity) {
-        String query = "SELECT airline, price, departure, arrival, duration FROM Flights WHERE departure = (SELECT airport_code FROM countries WHERE city = ?) AND arrival = (SELECT airport_code FROM countries WHERE city = ?)";
+        String query = "SELECT airline, price, departure, arrival, duration, departure_date FROM Flights WHERE departure = (SELECT airport_code FROM countries WHERE city = ?) AND arrival = (SELECT airport_code FROM countries WHERE city = ?)";
 
         try (PreparedStatement pstmt = conn.prepareStatement(query)) {
             pstmt.setString(1, departureCity);
@@ -168,8 +167,9 @@ public class Flight extends JFrame {
                 String departure = rs.getString("departure");
                 String arrival = rs.getString("arrival");
                 String duration = rs.getString("duration");
+                String departureDate = rs.getString("departure_date"); // إضافة تاريخ المغادرة
 
-                flightsPanel.add(createFlightPanel(airline, price, departure, arrival, duration));
+                flightsPanel.add(createFlightPanel(airline, price, departure, arrival, duration, departureDate));
                 flightsPanel.add(Box.createVerticalStrut(10));
             }
         } catch (SQLException e) {
@@ -177,7 +177,7 @@ public class Flight extends JFrame {
         }
     }
 
-    private JPanel createFlightPanel(String airline, double price, String departure, String arrival, String duration) {
+    private JPanel createFlightPanel(String airline, double price, String departure, String arrival, String duration, String departureDate) {
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
         panel.setBorder(BorderFactory.createCompoundBorder(
@@ -185,8 +185,8 @@ public class Flight extends JFrame {
                 BorderFactory.createEmptyBorder(10, 10, 10, 10)
         ));
         panel.setBackground(Color.decode("#F1F8F1"));
-        panel.setPreferredSize(new Dimension(480, 80));
-        panel.setMaximumSize(new Dimension(480, 80));
+        panel.setPreferredSize(new Dimension(480, 100)); // زيادة الحجم لتناسب تاريخ المغادرة
+        panel.setMaximumSize(new Dimension(480, 100));
 
         JLabel airlineLabel = new JLabel(airline, SwingConstants.LEFT);
         airlineLabel.setFont(new Font("Arial", Font.BOLD, 14));
@@ -199,7 +199,7 @@ public class Flight extends JFrame {
         headerPanel.add(airlineLabel, BorderLayout.WEST);
         headerPanel.add(priceLabel, BorderLayout.EAST);
 
-        JPanel flightInfoPanel = new JPanel(new GridLayout(1, 5));
+        JPanel flightInfoPanel = new JPanel(new GridLayout(1, 6)); // زيادة الأعمدة لتناسب تاريخ المغادرة
         flightInfoPanel.setOpaque(false);
 
         JLabel departureLabel = new JLabel(departure, SwingConstants.CENTER);
@@ -218,10 +218,14 @@ public class Flight extends JFrame {
         JLabel durationLabel = new JLabel(duration, SwingConstants.CENTER);
         durationLabel.setFont(new Font("Arial", Font.ITALIC, 12));
 
+        JLabel departureDateLabel = new JLabel(departureDate, SwingConstants.CENTER); // إضافة تاريخ المغادرة
+        departureDateLabel.setFont(new Font("Arial", Font.PLAIN, 12));
+
         flightInfoPanel.add(departureLabel);
         flightInfoPanel.add(iconLabel);
         flightInfoPanel.add(arrivalLabel);
         flightInfoPanel.add(durationLabel);
+        flightInfoPanel.add(departureDateLabel); // إضافة تاريخ المغادرة
 
         panel.add(headerPanel, BorderLayout.NORTH);
         panel.add(flightInfoPanel, BorderLayout.CENTER);
