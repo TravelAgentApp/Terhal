@@ -364,6 +364,8 @@ private void handleLogin(JFrame loginFrame, String username, String password, JF
     
     void showMainInfo() {
         // Launch the questionnaire to gather user preferences
+        //System.out.println(userId);
+        System.out.println(currentUser.getUserId());
         Questionaire Questionaire = new Questionaire(conn,currentUser.getUserId() );
         Questionaire.showMainInfo();
         
@@ -381,8 +383,10 @@ private void handleLogin(JFrame loginFrame, String username, String password, JF
     }
 
       public void showPlansPageafterAddNew(){
+        System.out.println(userId);
          // Launch the questionnaire to gather user preferences
-        Questionaire Questionaire = new Questionaire(conn,userId );
+        Questionaire Questionaire = new Questionaire(conn,userId);
+         currentUser = new User (userId);
         //call travel plan and take the userid as the constructor
         TravelPlan TravelPlan = new TravelPlan(Questionaire.getcityNames(userId),userId,Questionaire.getTripIdByUserId(userId), conn);
         App DisplayHome = new App (TravelPlan, Questionaire.getTripIdByUserId(userId));
@@ -480,7 +484,7 @@ public App(TravelPlan travelPlan, int tripId) {
     FlightL.addActionListener(new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e) {
-         Flight a = new Flight(conn, App.this);
+         Flight a = new Flight(conn, App.this,currentUser.getUserId() );
             dispose();
         }
     });

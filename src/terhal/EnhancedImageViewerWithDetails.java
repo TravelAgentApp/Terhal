@@ -1,6 +1,4 @@
-
 package terhal;
-
 
 import javax.swing.*;
 import java.awt.*;
@@ -56,6 +54,7 @@ public class EnhancedImageViewerWithDetails {
         imageLabel = new JLabel();
         imageLabel.setHorizontalAlignment(SwingConstants.CENTER);
         imageLabel.setVerticalAlignment(SwingConstants.CENTER);
+        frame.add(imageLabel, BorderLayout.CENTER);
 
         commentPanel = new JPanel();
         commentPanel.setLayout(new BoxLayout(commentPanel, BoxLayout.Y_AXIS));
@@ -117,12 +116,16 @@ public class EnhancedImageViewerWithDetails {
         addCommentButton.addActionListener(e -> addNewComment());
         uploadButton.addActionListener(e -> uploadNewExperience());
         nextButton.addActionListener(e -> {
-            currentIndex = (currentIndex + 1) % images.size();
-            updateDisplay();
+            if (!images.isEmpty()) {
+                currentIndex = (currentIndex + 1) % images.size();
+                updateDisplay();
+            }
         });
         prevButton.addActionListener(e -> {
-            currentIndex = (currentIndex - 1 + images.size()) % images.size();
-            updateDisplay();
+            if (!images.isEmpty()) {
+                currentIndex = (currentIndex - 1 + images.size()) % images.size();
+                updateDisplay();
+            }
         });
 
         frame.add(contentPanel, BorderLayout.CENTER);
@@ -162,74 +165,41 @@ public class EnhancedImageViewerWithDetails {
     }
 
     private void updateDisplay() {
-        if (!images.isEmpty()) {
-            ImageIcon icon = new ImageIcon(images.get(currentIndex));
-            int width = frame.getWidth();
-            int height = frame.getHeight() - 200; // Adjust for header and footer space
-            Image img = icon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH);
-            imageLabel.setIcon(new ImageIcon(img));
+        if (images.isEmpty() || currentIndex < 0 || currentIndex >= images.size()) {
+            JOptionPane.showMessageDialog(frame, "No images to display!");
+            return;
         }
 
         String currentImage = images.get(currentIndex);
-        commentPanel.removeAll();
-        ArrayList<Comment> currentComments = comments.getOrDefault(currentImage, new ArrayList<>());
-
-        if (currentComments.isEmpty()) {
-            JLabel noComments = new JLabel("No comments yet!", SwingConstants.CENTER);
-            noComments.setFont(new Font("Arial", Font.ITALIC, 12));
-            noComments.setForeground(Color.GRAY);
-            commentPanel.add(noComments);
-        } else {
-            for (Comment comment : currentComments) {
-                JPanel commentBox = new JPanel();
-                commentBox.setLayout(new BorderLayout());
-                commentBox.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
-                commentBox.setBackground(Color.WHITE);
-                commentBox.setMaximumSize(new Dimension(400, 50));
-
-                JLabel userLabel = new JLabel(comment.username + ":");
-                userLabel.setFont(new Font("Arial", Font.BOLD, 12));
-                userLabel.setForeground(new Color(0, 102, 204));
-
-                JLabel commentTextLabel = new JLabel("<html>" + comment.text + "</html>");
-                commentTextLabel.setFont(new Font("Arial", Font.PLAIN, 12));
-                commentTextLabel.setForeground(Color.BLACK);
-
-                JLabel timestampLabel = new JLabel(comment.timestamp.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")), SwingConstants.RIGHT);
-                timestampLabel.setFont(new Font("Arial", Font.ITALIC, 10));
-                timestampLabel.setForeground(Color.GRAY);
-
-                commentBox.add(userLabel, BorderLayout.NORTH);
-                commentBox.add(commentTextLabel, BorderLayout.CENTER);
-                commentBox.add(timestampLabel, BorderLayout.SOUTH);
-
-                commentPanel.add(commentBox);
-            }
-        }
-        commentPanel.revalidate();
-        commentPanel.repaint();
-
+        imageLabel.setIcon(new ImageIcon(currentImage));
         likeCountLabel.setText("Likes: " + likeCounts[currentIndex]);
         dislikeCountLabel.setText("Dislikes: " + dislikeCounts[currentIndex]);
+        updateCommentPanel(currentImage);
     }
 
     private void toggleLike() {
-        likeCounts[currentIndex]++;
-        updateDisplay();
+        if (!images.isEmpty()) {
+            likeCounts[currentIndex]++;
+            updateDisplay();
+        }
     }
 
     private void toggleDislike() {
-        dislikeCounts[currentIndex]++;
-        updateDisplay();
+        if (!images.isEmpty()) {
+            dislikeCounts[currentIndex]++;
+            updateDisplay();
+        }
     }
 
     private void addNewComment() {
-        String newComment = JOptionPane.showInputDialog(frame, "Enter your comment:");
-        if (newComment != null && !newComment.trim().isEmpty()) {
-            String currentImage = images.get(currentIndex);
-            comments.computeIfAbsent(currentImage, k -> new ArrayList<>())
-                    .add(new Comment("Current User", newComment.trim(), LocalDateTime.now()));
-            updateDisplay();
+        if (!images.isEmpty()) {
+            String newComment = JOptionPane.showInputDialog(frame, "Enter your comment:");
+            if (newComment != null && !newComment.trim().isEmpty()) {
+                String currentImage = images.get(currentIndex);
+                comments.computeIfAbsent(currentImage, k -> new ArrayList<>())
+                        .add(new Comment("Current User", newComment.trim(), LocalDateTime.now()));
+                updateDisplay();
+            }
         }
     }
 
@@ -258,8 +228,17 @@ public class EnhancedImageViewerWithDetails {
         }
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(EnhancedImageViewerWithDetails::new);
+    private void updateCommentPanel(String imagePath) {
+        commentPanel.removeAll();
+        ArrayList<Comment> commentList = comments.get(imagePath);
+        if (commentList != null) {
+            for (Comment comment : commentList) {
+                JLabel commentLabel = new JLabel("[" + comment.timestamp + "] " + comment.username + ": " + comment.text);
+                commentPanel.add(commentLabel);
+            }
+        }
+        commentPanel.revalidate();
+        commentPanel.repaint();
     }
 
     static class Comment {
