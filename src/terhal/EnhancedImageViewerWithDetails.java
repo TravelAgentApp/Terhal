@@ -19,10 +19,12 @@ public class EnhancedImageViewerWithDetails {
     private ArrayList<Integer> imageIds = new ArrayList<>(); // قائمة بمعرفات الصور من قاعدة البيانات
     private final String DB_URL = "jdbc:mysql://localhost:3306/travel_app"; // رابط قاعدة البيانات
     private final String DB_USERNAME = "root"; // اسم مستخدم قاعدة البيانات
-    private final String DB_PASSWORD = "123456"; // كلمة المرور
+    private final String DB_PASSWORD = "Janajgsz2004"; // كلمة المرور
+    Connection conn;
 
-    public EnhancedImageViewerWithDetails(String userId) {
+    public EnhancedImageViewerWithDetails(String userId, Connection conn) {
         this.currentUserId = userId;
+        this.conn = conn;
 
         if (currentUserId == null || currentUserId.trim().isEmpty()) {
             JOptionPane.showMessageDialog(null, "You must log in to continue.");
@@ -108,9 +110,9 @@ public class EnhancedImageViewerWithDetails {
     private void loadImagesFromDatabase() {
         imageIds.clear();
 
-        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD)) {
+        try  {
             String query = "SELECT imageId FROM user_images"; // جلب جميع الصور
-            PreparedStatement statement = connection.prepareStatement(query);
+            PreparedStatement statement = conn.prepareStatement(query);
 
             ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
@@ -141,10 +143,10 @@ public class EnhancedImageViewerWithDetails {
 
         int imageId = imageIds.get(currentIndex);
 
-        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD)) {
+        try  {
             // جلب بيانات الصورة من قاعدة البيانات
             String imageQuery = "SELECT imageData, likes, dislikes FROM user_images WHERE imageId = ?";
-            PreparedStatement imageStatement = connection.prepareStatement(imageQuery);
+            PreparedStatement imageStatement = conn.prepareStatement(imageQuery);
             imageStatement.setInt(1, imageId);
 
             ResultSet imageResultSet = imageStatement.executeQuery();
@@ -170,7 +172,7 @@ public class EnhancedImageViewerWithDetails {
                 JOIN users u ON c.userId = u.userId 
                 WHERE c.imageId = ?
             """;
-            PreparedStatement commentStatement = connection.prepareStatement(commentQuery);
+            PreparedStatement commentStatement = conn.prepareStatement(commentQuery);
             commentStatement.setInt(1, imageId);
 
             ResultSet commentResultSet = commentStatement.executeQuery();
@@ -230,9 +232,9 @@ public class EnhancedImageViewerWithDetails {
 
         int imageId = imageIds.get(currentIndex);
 
-        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD)) {
+        try {
             String query = "UPDATE user_images SET likes = likes + 1 WHERE imageId = ?";
-            PreparedStatement statement = connection.prepareStatement(query);
+            PreparedStatement statement = conn.prepareStatement(query);
             statement.setInt(1, imageId);
 
             statement.executeUpdate();
@@ -251,9 +253,9 @@ public class EnhancedImageViewerWithDetails {
 
         int imageId = imageIds.get(currentIndex);
 
-        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD)) {
+        try  {
             String query = "UPDATE user_images SET dislikes = dislikes + 1 WHERE imageId = ?";
-            PreparedStatement statement = connection.prepareStatement(query);
+            PreparedStatement statement = conn.prepareStatement(query);
             statement.setInt(1, imageId);
 
             statement.executeUpdate();
@@ -274,9 +276,9 @@ public class EnhancedImageViewerWithDetails {
         String commentText = JOptionPane.showInputDialog(frame, "Enter your comment:");
 
         if (commentText != null && !commentText.trim().isEmpty()) {
-            try (Connection connection = DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD)) {
+            try  {
                 String query = "INSERT INTO comments (imageId, userId, commentText, timestamp) VALUES (?, ?, ?, ?)";
-                PreparedStatement statement = connection.prepareStatement(query);
+                PreparedStatement statement = conn.prepareStatement(query);
                 statement.setInt(1, imageId);
                 statement.setString(2, currentUserId);
                 statement.setString(3, commentText.trim());
@@ -297,11 +299,11 @@ public class EnhancedImageViewerWithDetails {
         if (result == JFileChooser.APPROVE_OPTION) {
             File selectedFile = fileChooser.getSelectedFile();
 
-            try (Connection connection = DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD);
+            try (
                  FileInputStream fileInputStream = new FileInputStream(selectedFile)) {
 
                 String query = "INSERT INTO user_images (userId, imageName, imageData) VALUES (?, ?, ?)";
-                PreparedStatement statement = connection.prepareStatement(query);
+                PreparedStatement statement = conn.prepareStatement(query);
                 statement.setString(1, currentUserId);
                 statement.setString(2, selectedFile.getName());
                 statement.setBlob(3, fileInputStream);
@@ -326,9 +328,9 @@ public class EnhancedImageViewerWithDetails {
 
         int imageId = imageIds.get(currentIndex);
 
-        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD)) {
+        try  {
             String query = "SELECT userId FROM user_images WHERE imageId = ?";
-            PreparedStatement statement = connection.prepareStatement(query);
+            PreparedStatement statement = conn.prepareStatement(query);
             statement.setInt(1, imageId);
 
             ResultSet resultSet = statement.executeQuery();
@@ -345,12 +347,12 @@ public class EnhancedImageViewerWithDetails {
     }
 
     private void fetchAndDisplayPlanForUser(String userId) {
-        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD)) {
+        try  {
             String query = """
                 SELECT tripId, activityId, flightId, hotelId, countryId, city 
                 FROM travelplans WHERE userId = ?
             """;
-            PreparedStatement statement = connection.prepareStatement(query);
+            PreparedStatement statement = conn.prepareStatement(query);
             statement.setString(1, userId);
 
             ResultSet resultSet = statement.executeQuery();
@@ -382,9 +384,10 @@ public class EnhancedImageViewerWithDetails {
             JOptionPane.showMessageDialog(frame, "Failed to retrieve uploader's travel plan.", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
-
+/*
     public static void main(String[] args) {
         String userId = "user1"; // افترض أن واجهة تسجيل الدخول مررت userId الصحيح
-        SwingUtilities.invokeLater(() -> new EnhancedImageViewerWithDetails(userId));
+        SwingUtilities.invokeLater(() -> new EnhancedImageViewerWithDetails(userId, conn));
     }
+*/
 }
