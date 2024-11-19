@@ -480,7 +480,8 @@ public App(TravelPlan travelPlan, int tripId) {
         ExploreL.addActionListener(new ActionListener() {
     @Override
     public void actionPerformed(ActionEvent e) {
-        EnhancedImageViewerWithDetails Window = new EnhancedImageViewerWithDetails(currentUser.getUserId(), conn); // تمرير مرجع النافذة الحالية
+        EnhancedImageViewerWithDetails Window = new EnhancedImageViewerWithDetails(currentUser.getUserId(),conn,App.this); // تمرير مرجع النافذة الحالية
+        //EnhancedImageViewerWithDetails Window = new EnhancedImageViewerWithDetails(currentUser.getUserId(), conn);
         setVisible(false); // إخفاء نافذة App
         dispose();
 

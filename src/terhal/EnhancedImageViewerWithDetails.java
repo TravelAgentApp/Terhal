@@ -2,6 +2,8 @@ package terhal;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -17,15 +19,13 @@ public class EnhancedImageViewerWithDetails {
     private int currentIndex = 0;
     private String currentUserId; // المستخدم الحالي
     private ArrayList<Integer> imageIds = new ArrayList<>(); // قائمة بمعرفات الصور من قاعدة البيانات
-    private final String DB_URL = "jdbc:mysql://localhost:3306/travel_app"; // رابط قاعدة البيانات
-    private final String DB_USERNAME = "root"; // اسم مستخدم قاعدة البيانات
-    private final String DB_PASSWORD = "Janajgsz2004"; // كلمة المرور
     Connection conn;
-
-    public EnhancedImageViewerWithDetails(String userId, Connection conn) {
+    private JFrame appWindow; // مرجع للإطار السابق (App)
+   
+    public EnhancedImageViewerWithDetails(String userId, Connection conn, JFrame appWindow) {
         this.currentUserId = userId;
         this.conn = conn;
-
+        this.appWindow = appWindow; 
         if (currentUserId == null || currentUserId.trim().isEmpty()) {
             JOptionPane.showMessageDialog(null, "You must log in to continue.");
             System.exit(0); // إنهاء البرنامج إذا لم يتم تسجيل الدخول
@@ -69,6 +69,19 @@ public class EnhancedImageViewerWithDetails {
         prevButton.setBackground(new Color(76, 175, 80));
         nextButton.setForeground(Color.WHITE);
         prevButton.setForeground(Color.WHITE);
+        
+          JButton backButton = new JButton("Back");
+        backButton.setFont(new Font("Arial", Font.PLAIN, 16)); // حجم الخط أكبر قليلاً
+        backButton.setBackground(new Color(76, 175, 80)); // نفس اللون الأخضر
+        backButton.setForeground(Color.WHITE); //
+        
+         backButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                appWindow.setVisible(true); // إظهار نافذة App
+                frame.dispose(); // إغلاق نافذة Hotel
+            }
+        });
 
         JPanel bottomPanel = new JPanel();
         bottomPanel.setLayout(new GridLayout(2, 4, 5, 5));
@@ -82,6 +95,7 @@ public class EnhancedImageViewerWithDetails {
         bottomPanel.add(likeCountLabel);
         bottomPanel.add(dislikeCountLabel);
         bottomPanel.add(viewPlanButton);
+        bottomPanel.add(backButton);
 
         JPanel contentPanel = new JPanel(new BorderLayout());
         contentPanel.setBackground(new Color(34, 49, 63));
