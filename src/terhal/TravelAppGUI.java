@@ -160,33 +160,35 @@ public class TravelAppGUI extends JFrame {
 private void handleLogin(JFrame loginFrame, String username, String password, JFrame mainFrame) {
     if (validateLogin(username, password)) {
         currentUser = new User(); // Create the User object and set the properties as needed
-        currentUser.setUsername(username);// Set username or any other relevant info
+        currentUser.setUsername(username); // Set username or any other relevant info
+        
         String query = "SELECT userId FROM Users WHERE username = ? AND password_hash = ?";
         try (PreparedStatement pstmt = conn.prepareStatement(query)) {
             pstmt.setString(1, username);
             pstmt.setString(2, password);
             
-             ResultSet rs = pstmt.executeQuery();
-             rs.next();
-            currentUser.setUserId(rs.getString("userId") );
-        
-        }
-        catch (SQLException e) {
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                currentUser.setUserId(rs.getString("userId")); // تعيين userId في currentUser
+                userId = currentUser.getUserId(); // تعيين userId في الحقل العام
+            }
+        } catch (SQLException e) {
             e.printStackTrace();
         }
 
         loginFrame.dispose();  // Close login window
-        mainFrame.dispose();// Close the login/register window (passed as an argument)
+        mainFrame.dispose(); // Close the login/register window (passed as an argument)
         
-        if (hasTravelPlan(currentUser.getUserId()))
-        //showMainInfo();         // Call the main app window
-        showPlansPage();
-        else
-          showMainInfo();   
+        if (hasTravelPlan(currentUser.getUserId())) {
+            showPlansPage();         // Call the main app window
+        } else {
+            showMainInfo();   
+        }
     } else {
         JOptionPane.showMessageDialog(loginFrame, "Invalid login credentials.");
     }
 }
+
 
   // Method to check if user has a travel plan
     public boolean hasTravelPlan(String userId) {
@@ -382,16 +384,21 @@ private void handleLogin(JFrame loginFrame, String username, String password, JF
         //TravelPlanner travelPlanner = new TravelPlanner(TravelPlan);
     }
 
-      public void showPlansPageafterAddNew(){
-        System.out.println(userId);
-         // Launch the questionnaire to gather user preferences
-        Questionaire Questionaire = new Questionaire(conn,userId);
-         currentUser = new User (userId);
-        //call travel plan and take the userid as the constructor
-        TravelPlan TravelPlan = new TravelPlan(Questionaire.getcityNames(userId),userId,Questionaire.getTripIdByUserId(userId), conn);
-        App DisplayHome = new App (TravelPlan, Questionaire.getTripIdByUserId(userId));
-        //TravelPlanner travelPlanner = new TravelPlanner(TravelPlan);
-    }
+     public void showPlansPageafterAddNew() {
+    System.out.println(userId); // التحقق من طباعة userId الصحيح
+    Questionaire Questionaire = new Questionaire(conn, userId); // تمرير userId
+    currentUser = new User(userId); // تعيين userId في currentUser
+    
+    TravelPlan TravelPlan = new TravelPlan(
+        Questionaire.getcityNames(userId),
+        userId,
+        Questionaire.getTripIdByUserId(userId),
+        conn
+    );
+
+    App DisplayHome = new App(TravelPlan, Questionaire.getTripIdByUserId(userId));
+}
+
 
 
 public class App extends JFrame {
@@ -473,7 +480,7 @@ public App(TravelPlan travelPlan, int tripId) {
         ExploreL.addActionListener(new ActionListener() {
     @Override
     public void actionPerformed(ActionEvent e) {
-        EnhancedImageViewerWithDetails Window = new EnhancedImageViewerWithDetails(); // تمرير مرجع النافذة الحالية
+        EnhancedImageViewerWithDetails Window = new EnhancedImageViewerWithDetails(currentUser.getUserId()); // تمرير مرجع النافذة الحالية
         setVisible(false); // إخفاء نافذة App
         dispose();
 

@@ -2,59 +2,42 @@ package terhal;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.io.*;
-import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.sql.*;
 
 public class EnhancedImageViewerWithDetails {
     private JFrame frame;
-    private JLabel imageLabel, publisherLabel, locationLabel;
+    private JLabel imageLabel;
     private JPanel commentPanel;
     private JButton likeButton, dislikeButton, addCommentButton, nextButton, prevButton, uploadButton, viewPlanButton;
     private JLabel likeCountLabel, dislikeCountLabel;
-    private ArrayList<String> images = new ArrayList<>();
-    private int[] likeCounts;
-    private int[] dislikeCounts;
-    private HashMap<String, ArrayList<Comment>> comments = new HashMap<>();
     private int currentIndex = 0;
+    private String currentUserId; // المستخدم الحالي
+    private ArrayList<Integer> imageIds = new ArrayList<>(); // قائمة بمعرفات الصور من قاعدة البيانات
+    private final String DB_URL = "jdbc:mysql://localhost:3306/travel_app"; // رابط قاعدة البيانات
+    private final String DB_USERNAME = "root"; // اسم مستخدم قاعدة البيانات
+    private final String DB_PASSWORD = "123456"; // كلمة المرور
 
-    private final String STORAGE_FOLDER = "image_storage";
-    private final String DATA_FILE = STORAGE_FOLDER + "/data.txt";
+    public EnhancedImageViewerWithDetails(String userId) {
+        this.currentUserId = userId;
 
-    public EnhancedImageViewerWithDetails() {
-        frame = new JFrame("Explore Saudi Arabia Experiences");
+        if (currentUserId == null || currentUserId.trim().isEmpty()) {
+            JOptionPane.showMessageDialog(null, "You must log in to continue.");
+            System.exit(0); // إنهاء البرنامج إذا لم يتم تسجيل الدخول
+        }
+
+        frame = new JFrame("Explore All Experiences");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(500, 650);
         frame.setLayout(new BorderLayout());
         frame.getContentPane().setBackground(new Color(34, 49, 63));
 
-        File storageDir = new File(STORAGE_FOLDER);
-        if (!storageDir.exists()) {
-            storageDir.mkdir();
-        }
-
-        publisherLabel = new JLabel("", SwingConstants.CENTER);
-        publisherLabel.setFont(new Font("Arial", Font.BOLD, 16));
-        publisherLabel.setForeground(new Color(0, 230, 118));
-        publisherLabel.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, new Color(0, 150, 136)));
-
-        locationLabel = new JLabel("", SwingConstants.CENTER);
-        locationLabel.setFont(new Font("Arial", Font.ITALIC, 12));
-        locationLabel.setForeground(new Color(76, 175, 80));
-
-        JPanel headerPanel = new JPanel(new BorderLayout());
-        headerPanel.add(publisherLabel, BorderLayout.NORTH);
-        headerPanel.add(locationLabel, BorderLayout.SOUTH);
-        frame.add(headerPanel, BorderLayout.NORTH);
-
         imageLabel = new JLabel();
         imageLabel.setHorizontalAlignment(SwingConstants.CENTER);
         imageLabel.setVerticalAlignment(SwingConstants.CENTER);
-        frame.add(imageLabel, BorderLayout.CENTER);
 
         commentPanel = new JPanel();
         commentPanel.setLayout(new BoxLayout(commentPanel, BoxLayout.Y_AXIS));
@@ -66,6 +49,9 @@ public class EnhancedImageViewerWithDetails {
         addCommentButton = new JButton("Add Comment");
         uploadButton = new JButton("Upload Experience");
         viewPlanButton = new JButton("View Plan");
+        likeCountLabel = new JLabel("Likes: 0");
+        dislikeCountLabel = new JLabel("Dislikes: 0");
+
         likeButton.setBackground(new Color(200, 230, 201));
         dislikeButton.setBackground(new Color(200, 230, 201));
         addCommentButton.setBackground(new Color(76, 175, 80));
@@ -74,10 +60,6 @@ public class EnhancedImageViewerWithDetails {
         uploadButton.setForeground(Color.WHITE);
         viewPlanButton.setBackground(new Color(76, 175, 80));
         viewPlanButton.setForeground(Color.WHITE);
-        likeCountLabel = new JLabel("Likes: 0");
-        dislikeCountLabel = new JLabel("Dislikes: 0");
-        likeCountLabel.setForeground(Color.WHITE);
-        dislikeCountLabel.setForeground(Color.WHITE);
 
         nextButton = new JButton("Next");
         prevButton = new JButton("Previous");
@@ -95,9 +77,9 @@ public class EnhancedImageViewerWithDetails {
         bottomPanel.add(uploadButton);
         bottomPanel.add(likeButton);
         bottomPanel.add(dislikeButton);
-        bottomPanel.add(viewPlanButton);
         bottomPanel.add(likeCountLabel);
         bottomPanel.add(dislikeCountLabel);
+        bottomPanel.add(viewPlanButton);
 
         JPanel contentPanel = new JPanel(new BorderLayout());
         contentPanel.setBackground(new Color(34, 49, 63));
@@ -108,97 +90,203 @@ public class EnhancedImageViewerWithDetails {
         contentPanel.add(commentScrollPane, BorderLayout.WEST);
         contentPanel.add(bottomPanel, BorderLayout.SOUTH);
 
-        loadStoredData();
+        loadImagesFromDatabase(); // تحميل الصور من قاعدة البيانات
         updateDisplay();
 
         likeButton.addActionListener(e -> toggleLike());
         dislikeButton.addActionListener(e -> toggleDislike());
         addCommentButton.addActionListener(e -> addNewComment());
         uploadButton.addActionListener(e -> uploadNewExperience());
-        nextButton.addActionListener(e -> {
-            if (!images.isEmpty()) {
-                currentIndex = (currentIndex + 1) % images.size();
-                updateDisplay();
-            }
-        });
-        prevButton.addActionListener(e -> {
-            if (!images.isEmpty()) {
-                currentIndex = (currentIndex - 1 + images.size()) % images.size();
-                updateDisplay();
-            }
-        });
+        nextButton.addActionListener(e -> navigateImages(1));
+        prevButton.addActionListener(e -> navigateImages(-1));
+        viewPlanButton.addActionListener(e -> viewPlanForUploader());
 
         frame.add(contentPanel, BorderLayout.CENTER);
         frame.setVisible(true);
     }
 
-    private void loadStoredData() {
-        File file = new File(DATA_FILE);
-        if (!file.exists()) {
-            likeCounts = new int[0];
-            dislikeCounts = new int[0];
+    private void loadImagesFromDatabase() {
+        imageIds.clear();
+
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD)) {
+            String query = "SELECT imageId FROM user_images"; // جلب جميع الصور
+            PreparedStatement statement = connection.prepareStatement(query);
+
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                imageIds.add(resultSet.getInt("imageId"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(frame, "Failed to load images from database.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void navigateImages(int step) {
+        if (imageIds.isEmpty()) {
+            JOptionPane.showMessageDialog(frame, "No images available to navigate!", "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                images.add(line.trim());
-                comments.put(line.trim(), new ArrayList<>());
-            }
-            likeCounts = new int[images.size()];
-            dislikeCounts = new int[images.size()];
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void updateStoredData() {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(DATA_FILE))) {
-            for (String image : images) {
-                writer.write(image);
-                writer.newLine();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        currentIndex = (currentIndex + step + imageIds.size()) % imageIds.size(); // التنقل بشكل دائري
+        updateDisplay();
     }
 
     private void updateDisplay() {
-        if (images.isEmpty() || currentIndex < 0 || currentIndex >= images.size()) {
+        if (imageIds.isEmpty()) {
+            imageLabel.setIcon(null);
             JOptionPane.showMessageDialog(frame, "No images to display!");
             return;
         }
 
-        String currentImage = images.get(currentIndex);
-        imageLabel.setIcon(new ImageIcon(currentImage));
-        likeCountLabel.setText("Likes: " + likeCounts[currentIndex]);
-        dislikeCountLabel.setText("Dislikes: " + dislikeCounts[currentIndex]);
-        updateCommentPanel(currentImage);
+        int imageId = imageIds.get(currentIndex);
+
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD)) {
+            // جلب بيانات الصورة من قاعدة البيانات
+            String imageQuery = "SELECT imageData, likes, dislikes FROM user_images WHERE imageId = ?";
+            PreparedStatement imageStatement = connection.prepareStatement(imageQuery);
+            imageStatement.setInt(1, imageId);
+
+            ResultSet imageResultSet = imageStatement.executeQuery();
+            if (imageResultSet.next()) {
+                byte[] imageData = imageResultSet.getBytes("imageData");
+                int likes = imageResultSet.getInt("likes");
+                int dislikes = imageResultSet.getInt("dislikes");
+
+                ImageIcon icon = new ImageIcon(imageData);
+                int width = frame.getWidth();
+                int height = frame.getHeight() - 200;
+                Image img = icon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH);
+                imageLabel.setIcon(new ImageIcon(img));
+
+                likeCountLabel.setText("Likes: " + likes);
+                dislikeCountLabel.setText("Dislikes: " + dislikes);
+            }
+
+            // جلب التعليقات
+            String commentQuery = """
+                SELECT u.username, c.commentText, c.timestamp 
+                FROM comments c 
+                JOIN users u ON c.userId = u.userId 
+                WHERE c.imageId = ?
+            """;
+            PreparedStatement commentStatement = connection.prepareStatement(commentQuery);
+            commentStatement.setInt(1, imageId);
+
+            ResultSet commentResultSet = commentStatement.executeQuery();
+            commentPanel.removeAll();
+
+            if (!commentResultSet.isBeforeFirst()) { // لا توجد تعليقات
+                JLabel noComments = new JLabel("No comments yet!", SwingConstants.CENTER);
+                noComments.setFont(new Font("Arial", Font.ITALIC, 12));
+                noComments.setForeground(Color.GRAY);
+                commentPanel.add(noComments);
+            } else {
+                while (commentResultSet.next()) {
+                    String username = commentResultSet.getString("username");
+                    String text = commentResultSet.getString("commentText");
+                    LocalDateTime timestamp = commentResultSet.getTimestamp("timestamp").toLocalDateTime();
+
+                    JPanel commentBox = new JPanel();
+                    commentBox.setLayout(new BorderLayout());
+                    commentBox.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
+                    commentBox.setBackground(Color.WHITE);
+                    commentBox.setMaximumSize(new Dimension(400, 50));
+
+                    JLabel userLabel = new JLabel(username + ":");
+                    userLabel.setFont(new Font("Arial", Font.BOLD, 12));
+                    userLabel.setForeground(new Color(0, 102, 204));
+
+                    JLabel commentTextLabel = new JLabel("<html>" + text + "</html>");
+                    commentTextLabel.setFont(new Font("Arial", Font.PLAIN, 12));
+                    commentTextLabel.setForeground(Color.BLACK);
+
+                    JLabel timestampLabel = new JLabel(timestamp.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")), SwingConstants.RIGHT);
+                    timestampLabel.setFont(new Font("Arial", Font.ITALIC, 10));
+                    timestampLabel.setForeground(Color.GRAY);
+
+                    commentBox.add(userLabel, BorderLayout.NORTH);
+                    commentBox.add(commentTextLabel, BorderLayout.CENTER);
+                    commentBox.add(timestampLabel, BorderLayout.SOUTH);
+
+                    commentPanel.add(commentBox);
+                }
+            }
+
+            commentPanel.revalidate();
+            commentPanel.repaint();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(frame, "Failed to load data from database.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void toggleLike() {
-        if (!images.isEmpty()) {
-            likeCounts[currentIndex]++;
+        if (imageIds.isEmpty()) {
+            JOptionPane.showMessageDialog(frame, "No image selected for liking.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        int imageId = imageIds.get(currentIndex);
+
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD)) {
+            String query = "UPDATE user_images SET likes = likes + 1 WHERE imageId = ?";
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setInt(1, imageId);
+
+            statement.executeUpdate();
             updateDisplay();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(frame, "Failed to like the image.", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private void toggleDislike() {
-        if (!images.isEmpty()) {
-            dislikeCounts[currentIndex]++;
+        if (imageIds.isEmpty()) {
+            JOptionPane.showMessageDialog(frame, "No image selected for disliking.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        int imageId = imageIds.get(currentIndex);
+
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD)) {
+            String query = "UPDATE user_images SET dislikes = dislikes + 1 WHERE imageId = ?";
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setInt(1, imageId);
+
+            statement.executeUpdate();
             updateDisplay();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(frame, "Failed to dislike the image.", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private void addNewComment() {
-        if (!images.isEmpty()) {
-            String newComment = JOptionPane.showInputDialog(frame, "Enter your comment:");
-            if (newComment != null && !newComment.trim().isEmpty()) {
-                String currentImage = images.get(currentIndex);
-                comments.computeIfAbsent(currentImage, k -> new ArrayList<>())
-                        .add(new Comment("Current User", newComment.trim(), LocalDateTime.now()));
+        if (imageIds.isEmpty()) {
+            JOptionPane.showMessageDialog(frame, "No image selected for commenting.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        int imageId = imageIds.get(currentIndex);
+        String commentText = JOptionPane.showInputDialog(frame, "Enter your comment:");
+
+        if (commentText != null && !commentText.trim().isEmpty()) {
+            try (Connection connection = DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD)) {
+                String query = "INSERT INTO comments (imageId, userId, commentText, timestamp) VALUES (?, ?, ?, ?)";
+                PreparedStatement statement = connection.prepareStatement(query);
+                statement.setInt(1, imageId);
+                statement.setString(2, currentUserId);
+                statement.setString(3, commentText.trim());
+                statement.setTimestamp(4, Timestamp.valueOf(LocalDateTime.now()));
+
+                statement.executeUpdate();
                 updateDisplay();
+            } catch (SQLException e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(frame, "Failed to add comment.", "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
@@ -208,48 +296,95 @@ public class EnhancedImageViewerWithDetails {
         int result = fileChooser.showOpenDialog(frame);
         if (result == JFileChooser.APPROVE_OPTION) {
             File selectedFile = fileChooser.getSelectedFile();
-            File destination = new File(STORAGE_FOLDER + "/" + selectedFile.getName());
 
-            try {
-                if (!destination.exists()) {
-                    Files.copy(selectedFile.toPath(), destination.toPath());
-                    images.add(destination.getAbsolutePath());
-                    comments.put(destination.getAbsolutePath(), new ArrayList<>());
-                    likeCounts = java.util.Arrays.copyOf(likeCounts, images.size());
-                    dislikeCounts = java.util.Arrays.copyOf(dislikeCounts, images.size());
-                    updateStoredData();
-                    updateDisplay();
-                } else {
-                    JOptionPane.showMessageDialog(frame, "Image already exists!");
-                }
-            } catch (IOException e) {
+            try (Connection connection = DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD);
+                 FileInputStream fileInputStream = new FileInputStream(selectedFile)) {
+
+                String query = "INSERT INTO user_images (userId, imageName, imageData) VALUES (?, ?, ?)";
+                PreparedStatement statement = connection.prepareStatement(query);
+                statement.setString(1, currentUserId);
+                statement.setString(2, selectedFile.getName());
+                statement.setBlob(3, fileInputStream);
+
+                statement.executeUpdate();
+
+                JOptionPane.showMessageDialog(frame, "Image uploaded successfully!");
+                loadImagesFromDatabase();
+                updateDisplay();
+            } catch (SQLException | IOException e) {
                 e.printStackTrace();
+                JOptionPane.showMessageDialog(frame, "Failed to upload the image.", "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
 
-    private void updateCommentPanel(String imagePath) {
-        commentPanel.removeAll();
-        ArrayList<Comment> commentList = comments.get(imagePath);
-        if (commentList != null) {
-            for (Comment comment : commentList) {
-                JLabel commentLabel = new JLabel("[" + comment.timestamp + "] " + comment.username + ": " + comment.text);
-                commentPanel.add(commentLabel);
-            }
+    private void viewPlanForUploader() {
+        if (imageIds.isEmpty()) {
+            JOptionPane.showMessageDialog(frame, "No image selected to view uploader's plan!", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
         }
-        commentPanel.revalidate();
-        commentPanel.repaint();
+
+        int imageId = imageIds.get(currentIndex);
+
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD)) {
+            String query = "SELECT userId FROM user_images WHERE imageId = ?";
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setInt(1, imageId);
+
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                String uploaderId = resultSet.getString("userId");
+                fetchAndDisplayPlanForUser(uploaderId);
+            } else {
+                JOptionPane.showMessageDialog(frame, "Uploader information not found for this image.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(frame, "Failed to retrieve uploader information.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
-    static class Comment {
-        String username;
-        String text;
-        LocalDateTime timestamp;
+    private void fetchAndDisplayPlanForUser(String userId) {
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD)) {
+            String query = """
+                SELECT tripId, activityId, flightId, hotelId, countryId, city 
+                FROM travelplans WHERE userId = ?
+            """;
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setString(1, userId);
 
-        public Comment(String username, String text, LocalDateTime timestamp) {
-            this.username = username;
-            this.text = text;
-            this.timestamp = timestamp;
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                int tripId = resultSet.getInt("tripId");
+                int activityId = resultSet.getInt("activityId");
+                int flightId = resultSet.getInt("flightId");
+                int hotelId = resultSet.getInt("hotelId");
+                int countryId = resultSet.getInt("countryId");
+                String city = resultSet.getString("city");
+
+                String message = String.format(
+                    "Uploader ID: %s\n" +
+                    "Trip ID: %d\n" +
+                    "Activity ID: %d\n" +
+                    "Flight ID: %d\n" +
+                    "Hotel ID: %d\n" +
+                    "Country ID: %d\n" +
+                    "City: %s",
+                    userId, tripId, activityId, flightId, hotelId, countryId, city
+                );
+
+                JOptionPane.showMessageDialog(frame, message, "Uploader's Travel Plan", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(frame, "No travel plan found for this uploader.", "No Data", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(frame, "Failed to retrieve uploader's travel plan.", "Error", JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    public static void main(String[] args) {
+        String userId = "user1"; // افترض أن واجهة تسجيل الدخول مررت userId الصحيح
+        SwingUtilities.invokeLater(() -> new EnhancedImageViewerWithDetails(userId));
     }
 }
