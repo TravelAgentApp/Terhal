@@ -388,5 +388,48 @@ public void saveDaysToDatabase(int travelPlanId, List<Day> days) {
 }
 
 
+public String getHotelNameByCity(String city) {
+    String query = "SELECT name FROM Hotels WHERE location = ?";
+    try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+        pstmt.setString(1, city);
+        ResultSet rs = pstmt.executeQuery();
+        if (rs.next()) {
+            return rs.getString("name");
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return "Unknown"; // إذا لم يتم العثور على الفندق
+}
+public String getFlightDetailsByCity(String city) {
+    String query = """
+        SELECT airline, price, departure, arrival, duration, flight_class
+        FROM flights
+        WHERE departure = ?
+    """;
+
+    try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+        pstmt.setString(1, city); // المدينة كمرجع للمغادرة
+        ResultSet rs = pstmt.executeQuery();
+
+        if (rs.next()) {
+            return String.format(
+                "Airline: %s, Price: %.2f, Departure: %s, Arrival: %s, Duration: %s, Class: %s",
+                rs.getString("airline"),
+                rs.getDouble("price"),
+                rs.getString("departure"),
+                rs.getString("arrival"),
+                rs.getString("duration"),
+                rs.getString("flight_class")
+            );
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+
+    return "No Flight Details"; // إذا لم يتم العثور على بيانات الطيران
+}
+
+
 }
 
