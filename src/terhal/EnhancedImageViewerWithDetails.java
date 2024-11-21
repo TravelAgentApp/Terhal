@@ -1,5 +1,6 @@
 package terhal;
 
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -7,6 +8,7 @@ import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.List;
 import java.sql.*;
 
 public class EnhancedImageViewerWithDetails {
@@ -144,22 +146,22 @@ public class EnhancedImageViewerWithDetails {
         frame.setVisible(true);
     }
 
-    private void loadImagesFromDatabase() {
-        imageIds.clear();
-        try {
-            String query = "SELECT imageId FROM user_images";
-            PreparedStatement statement = conn.prepareStatement(query);
-            ResultSet resultSet = statement.executeQuery();
-            while (resultSet.next()) {
-                imageIds.add(resultSet.getInt("imageId"));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(frame, "Failed to load images from database.", "Error", JOptionPane.ERROR_MESSAGE);
+   private void loadImagesFromDatabase() {
+    imageIds.clear();
+    try {
+        String query = "SELECT imageId FROM user_images";
+        PreparedStatement statement = conn.prepareStatement(query);
+        ResultSet resultSet = statement.executeQuery();
+        while (resultSet.next()) {
+            imageIds.add(resultSet.getInt("imageId"));
         }
+    } catch (SQLException e) {
+        e.printStackTrace();
+        JOptionPane.showMessageDialog(frame, "Failed to load images from database.", "Error", JOptionPane.ERROR_MESSAGE);
     }
+}
 
-    private void updateDisplay() {
+private void updateDisplay() {
     if (imageIds.isEmpty()) {
         imageLabel.setIcon(null);
         JOptionPane.showMessageDialog(frame, "No images to display!");
@@ -169,7 +171,6 @@ public class EnhancedImageViewerWithDetails {
     int imageId = imageIds.get(currentIndex);
 
     try {
-        // **جلب بيانات الصورة واللايكات والديسلايكات**
         String imageQuery = "SELECT imageData, likes, dislikes FROM user_images WHERE imageId = ?";
         PreparedStatement imageStatement = conn.prepareStatement(imageQuery);
         imageStatement.setInt(1, imageId);
@@ -180,19 +181,16 @@ public class EnhancedImageViewerWithDetails {
             int likes = imageResultSet.getInt("likes");
             int dislikes = imageResultSet.getInt("dislikes");
 
-            // **عرض الصورة**
             ImageIcon icon = new ImageIcon(imageData);
             int width = frame.getWidth();
             int height = frame.getHeight() - 200;
             Image img = icon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH);
             imageLabel.setIcon(new ImageIcon(img));
 
-            // **عرض عدد اللايكات والديسلايكات**
             likeCountLabel.setText("Likes: " + likes);
             dislikeCountLabel.setText("Dislikes: " + dislikes);
         }
 
-        // **جلب التعليقات**
         String commentQuery = """
             SELECT u.username, c.commentText, c.timestamp 
             FROM comments c 
@@ -203,38 +201,33 @@ public class EnhancedImageViewerWithDetails {
         commentStatement.setInt(1, imageId);
 
         ResultSet commentResultSet = commentStatement.executeQuery();
-        commentPanel.removeAll(); // إزالة التعليقات السابقة لعرض الجديدة
+        commentPanel.removeAll();
 
-        if (!commentResultSet.isBeforeFirst()) { // **إذا لم توجد تعليقات**
+        if (!commentResultSet.isBeforeFirst()) {
             JLabel noComments = new JLabel("No comments yet!", SwingConstants.CENTER);
             noComments.setFont(new Font("Arial", Font.ITALIC, 12));
             noComments.setForeground(Color.GRAY);
             commentPanel.add(noComments);
         } else {
-            // **عرض كل تعليق**
             while (commentResultSet.next()) {
                 String username = commentResultSet.getString("username");
                 String text = commentResultSet.getString("commentText");
                 LocalDateTime timestamp = commentResultSet.getTimestamp("timestamp").toLocalDateTime();
 
-                // **صندوق لكل تعليق**
                 JPanel commentBox = new JPanel();
                 commentBox.setLayout(new BorderLayout());
                 commentBox.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
                 commentBox.setBackground(Color.WHITE);
                 commentBox.setMaximumSize(new Dimension(400, 50));
 
-                // **اسم المستخدم**
                 JLabel userLabel = new JLabel(username + ":");
                 userLabel.setFont(new Font("Arial", Font.BOLD, 12));
                 userLabel.setForeground(new Color(0, 102, 204));
 
-                // **النص**
                 JLabel commentTextLabel = new JLabel("<html>" + text + "</html>");
                 commentTextLabel.setFont(new Font("Arial", Font.PLAIN, 12));
                 commentTextLabel.setForeground(Color.BLACK);
 
-                // **الوقت**
                 JLabel timestampLabel = new JLabel(timestamp.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")), SwingConstants.RIGHT);
                 timestampLabel.setFont(new Font("Arial", Font.ITALIC, 10));
                 timestampLabel.setForeground(Color.GRAY);
@@ -243,14 +236,13 @@ public class EnhancedImageViewerWithDetails {
                 commentBox.add(commentTextLabel, BorderLayout.CENTER);
                 commentBox.add(timestampLabel, BorderLayout.SOUTH);
 
-                commentPanel.add(commentBox); // إضافة التعليق إلى اللوحة
+                commentPanel.add(commentBox);
             }
         }
 
-        commentPanel.revalidate(); // تحديث لوحة التعليقات
+        commentPanel.revalidate();
         commentPanel.repaint();
 
-        // **تحديث العدادات الإجمالية**
         updateTotalStats();
 
     } catch (SQLException e) {
@@ -259,209 +251,312 @@ public class EnhancedImageViewerWithDetails {
     }
 }
 
-    private void updateTotalStats() {
-        try {
-            String query = "SELECT SUM(likes) AS totalLikes, SUM(dislikes) AS totalDislikes FROM user_images";
-            PreparedStatement statement = conn.prepareStatement(query);
-            ResultSet resultSet = statement.executeQuery();
-
-            if (resultSet.next()) {
-                totalLikesLabel.setText(String.valueOf(resultSet.getInt("totalLikes")));
-                totalDislikesLabel.setText(String.valueOf(resultSet.getInt("totalDislikes")));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+private void toggleLike() {
+    if (imageIds.isEmpty()) {
+        JOptionPane.showMessageDialog(frame, "No image selected for liking.", "Error", JOptionPane.ERROR_MESSAGE);
+        return;
     }
 
-    private void toggleLike() {
-        if (imageIds.isEmpty()) {
-            JOptionPane.showMessageDialog(frame, "No image selected for liking.", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
+    int imageId = imageIds.get(currentIndex);
 
-        int imageId = imageIds.get(currentIndex);
+    try {
+        String query = "UPDATE user_images SET likes = likes + 1 WHERE imageId = ?";
+        PreparedStatement statement = conn.prepareStatement(query);
+        statement.setInt(1, imageId);
+        statement.executeUpdate();
 
-        try {
-            String query = "UPDATE user_images SET likes = likes + 1 WHERE imageId = ?";
-            PreparedStatement statement = conn.prepareStatement(query);
-            statement.setInt(1, imageId);
-            statement.executeUpdate();
-
-            updateDisplay();
-        } catch (SQLException e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(frame, "Failed to like the image.", "Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    private void toggleDislike() {
-        if (imageIds.isEmpty()) {
-            JOptionPane.showMessageDialog(frame, "No image selected for disliking.", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        int imageId = imageIds.get(currentIndex);
-
-        try {
-            String query = "UPDATE user_images SET dislikes = dislikes + 1 WHERE imageId = ?";
-            PreparedStatement statement = conn.prepareStatement(query);
-            statement.setInt(1, imageId);
-            statement.executeUpdate();
-
-            updateDisplay();
-        } catch (SQLException e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(frame, "Failed to dislike the image.", "Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-    private void navigateImages(int step) {
-        if (imageIds.isEmpty()) {
-            JOptionPane.showMessageDialog(frame, "No images available to navigate!", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        // تحديث الفهرس الحالي بناءً على الخطوة مع ضمان البقاء داخل حدود القائمة
-        currentIndex = (currentIndex + step + imageIds.size()) % imageIds.size();
-
-        // تحديث العرض بناءً على الصورة الحالية
         updateDisplay();
+    } catch (SQLException e) {
+        e.printStackTrace();
+        JOptionPane.showMessageDialog(frame, "Failed to like the image.", "Error", JOptionPane.ERROR_MESSAGE);
+    }
+}
+
+private void toggleDislike() {
+    if (imageIds.isEmpty()) {
+        JOptionPane.showMessageDialog(frame, "No image selected for disliking.", "Error", JOptionPane.ERROR_MESSAGE);
+        return;
     }
 
-    private void addNewComment() {
-        if (imageIds.isEmpty()) {
-            JOptionPane.showMessageDialog(frame, "No image selected for commenting.", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
+    int imageId = imageIds.get(currentIndex);
 
-        int imageId = imageIds.get(currentIndex);
-        String commentText = JOptionPane.showInputDialog(frame, "Enter your comment:");
+    try {
+        String query = "UPDATE user_images SET dislikes = dislikes + 1 WHERE imageId = ?";
+        PreparedStatement statement = conn.prepareStatement(query);
+        statement.setInt(1, imageId);
+        statement.executeUpdate();
 
-        if (commentText != null && !commentText.trim().isEmpty()) {
-            try {
-                String query = "INSERT INTO comments (imageId, userId, commentText, timestamp) VALUES (?, ?, ?, ?)";
-                PreparedStatement statement = conn.prepareStatement(query);
-                statement.setInt(1, imageId);
-                statement.setString(2, currentUserId);
-                statement.setString(3, commentText.trim());
-                statement.setTimestamp(4, Timestamp.valueOf(LocalDateTime.now()));
+        updateDisplay();
+    } catch (SQLException e) {
+        e.printStackTrace();
+        JOptionPane.showMessageDialog(frame, "Failed to dislike the image.", "Error", JOptionPane.ERROR_MESSAGE);
+    }
+}
 
-                statement.executeUpdate();
-                updateDisplay();
-            } catch (SQLException e) {
-                e.printStackTrace();
-                JOptionPane.showMessageDialog(frame, "Failed to add comment.", "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        }
+private void navigateImages(int step) {
+    if (imageIds.isEmpty()) {
+        JOptionPane.showMessageDialog(frame, "No images available to navigate!", "Error", JOptionPane.ERROR_MESSAGE);
+        return;
     }
 
-    private void uploadNewExperience() {
-        JFileChooser fileChooser = new JFileChooser();
-        int result = fileChooser.showOpenDialog(frame);
-        if (result == JFileChooser.APPROVE_OPTION) {
-            File selectedFile = fileChooser.getSelectedFile();
+    currentIndex = (currentIndex + step + imageIds.size()) % imageIds.size();
+    updateDisplay();
+}
 
-            try (FileInputStream fileInputStream = new FileInputStream(selectedFile)) {
-                String query = "INSERT INTO user_images (userId, imageName, imageData) VALUES (?, ?, ?)";
-                PreparedStatement statement = conn.prepareStatement(query);
-                statement.setString(1, currentUserId);
-                statement.setString(2, selectedFile.getName());
-                statement.setBlob(3, fileInputStream);
-
-                statement.executeUpdate();
-
-                JOptionPane.showMessageDialog(frame, "Image uploaded successfully!");
-                loadImagesFromDatabase();
-                updateDisplay();
-            } catch (SQLException | IOException e) {
-                e.printStackTrace();
-                JOptionPane.showMessageDialog(frame, "Failed to upload the image.", "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        }
+private void addNewComment() {
+    if (imageIds.isEmpty()) {
+        JOptionPane.showMessageDialog(frame, "No image selected for commenting.", "Error", JOptionPane.ERROR_MESSAGE);
+        return;
     }
 
-    private void viewPlanForUploader() {
-        if (imageIds.isEmpty()) {
-            JOptionPane.showMessageDialog(frame, "No image selected to view uploader's plan!", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
+    int imageId = imageIds.get(currentIndex);
+    String commentText = JOptionPane.showInputDialog(frame, "Enter your comment:");
 
-        int imageId = imageIds.get(currentIndex);
-
+    if (commentText != null && !commentText.trim().isEmpty()) {
         try {
-            String query = "SELECT userId FROM user_images WHERE imageId = ?";
+            String query = "INSERT INTO comments (imageId, userId, commentText, timestamp) VALUES (?, ?, ?, ?)";
             PreparedStatement statement = conn.prepareStatement(query);
             statement.setInt(1, imageId);
+            statement.setString(2, currentUserId);
+            statement.setString(3, commentText.trim());
+            statement.setTimestamp(4, Timestamp.valueOf(LocalDateTime.now()));
 
-            ResultSet resultSet = statement.executeQuery();
-            if (resultSet.next()) {
-                String uploaderId = resultSet.getString("userId");
-
-                int tripId = getTripIdByUserId(uploaderId);
-                if (tripId == -1) {
-                    JOptionPane.showMessageDialog(frame, "No trip plan found for this uploader.", "No Data", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-
-                TravelPlan travelPlan = fetchTravelPlan(uploaderId, tripId);
-                if (travelPlan == null) {
-                    JOptionPane.showMessageDialog(frame, "Failed to load travel plan details.", "Error", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-
-                TravelAppGUI travelAppInstance = new TravelAppGUI(conn);
-                travelAppInstance.new App(travelPlan, tripId);
-
-                frame.dispose();
-            } else {
-                JOptionPane.showMessageDialog(frame, "Uploader information not found for this image.", "Error", JOptionPane.ERROR_MESSAGE);
-            }
+            statement.executeUpdate();
+            updateDisplay();
         } catch (SQLException e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(frame, "Failed to retrieve uploader's information.", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(frame, "Failed to add comment.", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
+}
 
-    private TravelPlan fetchTravelPlan(String userId, int tripId) {
-        try {
-            String cityQuery = "SELECT city FROM travelplans WHERE userId = ? AND tripId = ?";
-            PreparedStatement cityStmt = conn.prepareStatement(cityQuery);
-            cityStmt.setString(1, userId);
-            cityStmt.setInt(2, tripId);
+private void uploadNewExperience() {
+    JFileChooser fileChooser = new JFileChooser();
+    int result = fileChooser.showOpenDialog(frame);
+    if (result == JFileChooser.APPROVE_OPTION) {
+        File selectedFile = fileChooser.getSelectedFile();
 
-            ResultSet cityResultSet = cityStmt.executeQuery();
-            ArrayList<String> cityList = new ArrayList<>();
+        try (FileInputStream fileInputStream = new FileInputStream(selectedFile)) {
+            String query = "INSERT INTO user_images (userId, imageName, imageData) VALUES (?, ?, ?)";
+            PreparedStatement statement = conn.prepareStatement(query);
+            statement.setString(1, currentUserId);
+            statement.setString(2, selectedFile.getName());
+            statement.setBlob(3, fileInputStream);
 
-            while (cityResultSet.next()) {
-                cityList.add(cityResultSet.getString("city"));
-            }
+            statement.executeUpdate();
 
-            if (cityList.isEmpty()) {
-                return null;
-            }
-
-            String[] cities = cityList.toArray(new String[0]);
-            return new TravelPlan(cities, userId, tripId, conn);
-
-        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(frame, "Image uploaded successfully!");
+            loadImagesFromDatabase();
+            updateDisplay();
+        } catch (SQLException | IOException e) {
             e.printStackTrace();
+            JOptionPane.showMessageDialog(frame, "Failed to upload the image.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+}
+
+
+   private void viewPlanForUploader() {
+    if (imageIds.isEmpty()) {
+        JOptionPane.showMessageDialog(frame, "No image selected to view uploader's plan!", "Error", JOptionPane.ERROR_MESSAGE);
+        return;
+    }
+
+    int imageId = imageIds.get(currentIndex);
+
+    try {
+        // جلب userId الخاص بمن رفع الصورة
+        String query = "SELECT userId FROM user_images WHERE imageId = ?";
+        PreparedStatement statement = conn.prepareStatement(query);
+        statement.setInt(1, imageId);
+
+        ResultSet resultSet = statement.executeQuery();
+        if (resultSet.next()) {
+            String uploaderId = resultSet.getString("userId");
+
+            // جلب معلومات الرحلة الخاصة بالمستخدم
+            int tripId = getTripIdByUserId(uploaderId); // تم جلب tripId هنا
+            if (tripId == -1) {
+                JOptionPane.showMessageDialog(frame, "No trip plan found for this uploader.", "No Data", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // إنشاء كائن TravelPlan بناءً على بيانات المستخدم
+            TravelPlan travelPlan = fetchTravelPlan(uploaderId, tripId);
+            if (travelPlan == null) {
+                JOptionPane.showMessageDialog(frame, "Failed to load travel plan details.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // عرض تفاصيل خطة السفر
+            showUploaderTravelPlan(travelPlan, tripId); // تمرير tripId هنا
+
+        } else {
+            JOptionPane.showMessageDialog(frame, "Uploader information not found for this image.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+        JOptionPane.showMessageDialog(frame, "Failed to retrieve uploader's information.", "Error", JOptionPane.ERROR_MESSAGE);
+    }
+}
+
+private void showUploaderTravelPlan(TravelPlan travelPlan, int tripId) {
+    JFrame detailsFrame = new JFrame("Uploader Travel Plan");
+    detailsFrame.setSize(1200, 600);
+    detailsFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+    detailsFrame.setLayout(new BorderLayout(10, 10));
+
+    // عنوان الإطار
+    JLabel titleLabel = new JLabel("Travel Plan Details", JLabel.CENTER);
+    titleLabel.setFont(new Font("Arial", Font.BOLD, 20));
+    detailsFrame.add(titleLabel, BorderLayout.NORTH);
+
+    // استرجاع الأيام وخطة السفر
+    List<Day> days = travelPlan.createDailyItinerary(
+        travelPlan.getActivitiesByTime(""),
+        travelPlan.getRestaurantsByCity(""),
+        travelPlan.getduration(tripId, travelPlan.userID)
+    );
+
+    // إعداد أسماء الأعمدة
+    String[] columnNames = {
+        "Day", "City", "Flight Details", "Hotel", 
+        "Breakfast Restaurant", "Dinner Restaurant", 
+        "Morning Activity", "Evening Activity", "Night Activity"
+    };
+
+    // إنشاء بيانات الجدول
+    Object[][] tableData = new Object[days.size()][9];
+
+    for (int i = 0; i < days.size(); i++) {
+        Day day = days.get(i);
+        String city = travelPlan.getCitynames()[i % travelPlan.getCitynames().length]; // المدينة
+        String flightDetails = travelPlan.getFlightDetailsByCity(city); // تفاصيل الطيران
+
+        // المطاعم
+        Integer breakfastId = day.getRestaurantBreakfast();
+        Integer dinnerId = day.getRestaurantDinner();
+        String breakfastName = (breakfastId != null) ? travelPlan.getRestaurantNameById(breakfastId) : "No Breakfast Info";
+        String dinnerName = (dinnerId != null) ? travelPlan.getRestaurantNameById(dinnerId) : "No Dinner Info";
+
+        // الأنشطة
+        String morningActivity = (day.getMorningActivity() != null) 
+                                ? travelPlan.getActivityNameById(day.getMorningActivity()) 
+                                : "No Morning Activity";
+        String eveningActivity = (day.getEveningActivity() != null) 
+                                ? travelPlan.getActivityNameById(day.getEveningActivity()) 
+                                : "No Evening Activity";
+        String nightActivity = (day.getNightActivity() != null) 
+                              ? travelPlan.getActivityNameById(day.getNightActivity()) 
+                              : "No Night Activity";
+
+        // تصحيح البيانات أثناء التنفيذ
+        System.out.println("Day: " + day.getDayName());
+        System.out.println("City: " + city);
+        System.out.println("Flight Details: " + flightDetails);
+        System.out.println("Breakfast: " + breakfastName);
+        System.out.println("Dinner: " + dinnerName);
+        System.out.println("Morning Activity: " + morningActivity);
+        System.out.println("Evening Activity: " + eveningActivity);
+        System.out.println("Night Activity: " + nightActivity);
+
+        // ملء بيانات الجدول
+        tableData[i][0] = day.getDayName();
+        tableData[i][1] = city;
+        tableData[i][2] = (flightDetails != null) ? flightDetails : "No Flight Details";
+        tableData[i][3] = travelPlan.getHotelNameByCity(city);
+        tableData[i][4] = breakfastName;
+        tableData[i][5] = dinnerName;
+        tableData[i][6] = morningActivity;
+        tableData[i][7] = eveningActivity;
+        tableData[i][8] = nightActivity;
+    }
+
+    // إنشاء الجدول وإضافته
+    JTable travelPlanTable = new JTable(tableData, columnNames);
+    travelPlanTable.setFont(new Font("Arial", Font.PLAIN, 14));
+    travelPlanTable.setRowHeight(25);
+    JScrollPane tableScrollPane = new JScrollPane(travelPlanTable);
+    detailsFrame.add(tableScrollPane, BorderLayout.CENTER);
+
+    // إضافة زر للعودة
+    JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+    JButton backButton = new JButton("Back");
+    styleButton(backButton);
+    backButton.addActionListener(e -> {
+        detailsFrame.dispose();
+        frame.setVisible(true);
+    });
+
+    buttonPanel.add(backButton);
+    detailsFrame.add(buttonPanel, BorderLayout.SOUTH);
+
+    detailsFrame.setVisible(true);
+}
+
+
+private void updateTotalStats() {
+    try {
+        String query = "SELECT SUM(likes) AS totalLikes, SUM(dislikes) AS totalDislikes FROM user_images";
+        PreparedStatement statement = conn.prepareStatement(query);
+        ResultSet resultSet = statement.executeQuery();
+
+        if (resultSet.next()) {
+            totalLikesLabel.setText(String.valueOf(resultSet.getInt("totalLikes")));
+            totalDislikesLabel.setText(String.valueOf(resultSet.getInt("totalDislikes")));
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+}
+private void styleButton(JButton button) {
+    button.setFont(new Font("Times New Roman", Font.BOLD, 16));
+    button.setBackground(new Color(60, 179, 113)); // لون أخضر جذاب
+    button.setForeground(Color.WHITE); // النص باللون الأبيض
+    button.setFocusPainted(false); // إزالة حدود التركيز عند النقر
+    button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)); // جعل المؤشر "يد" عند المرور على الزر
+}
+
+private TravelPlan fetchTravelPlan(String userId, int tripId) {
+    try {
+        String cityQuery = "SELECT city FROM travelplans WHERE userId = ? AND tripId = ?";
+        PreparedStatement cityStmt = conn.prepareStatement(cityQuery);
+        cityStmt.setString(1, userId);
+        cityStmt.setInt(2, tripId);
+
+        ResultSet cityResultSet = cityStmt.executeQuery();
+        ArrayList<String> cityList = new ArrayList<>();
+
+        while (cityResultSet.next()) {
+            cityList.add(cityResultSet.getString("city"));
+        }
+
+        if (cityList.isEmpty()) {
             return null;
         }
+
+        String[] cities = cityList.toArray(new String[0]);
+        return new TravelPlan(cities, userId, tripId, conn);
+
+    } catch (SQLException e) {
+        e.printStackTrace();
+        return null;
     }
+}
 
-    private int getTripIdByUserId(String userId) {
-        try {
-            String query = "SELECT tripId FROM travelplans WHERE userId = ?";
-            PreparedStatement statement = conn.prepareStatement(query);
-            statement.setString(1, userId);
+private int getTripIdByUserId(String userId) {
+    try {
+        String query = "SELECT tripId FROM travelplans WHERE userId = ?";
+        PreparedStatement statement = conn.prepareStatement(query);
+        statement.setString(1, userId);
 
-            ResultSet resultSet = statement.executeQuery();
-            if (resultSet.next()) {
-                return resultSet.getInt("tripId");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
+        ResultSet resultSet = statement.executeQuery();
+        if (resultSet.next()) {
+            return resultSet.getInt("tripId");
         }
-        return -1;
+    } catch (SQLException e) {
+        e.printStackTrace();
     }
+    return -1;
+}
 }
