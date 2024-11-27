@@ -84,6 +84,33 @@ public List<Integer> getRestaurantsByCity(String city) {
     return restaurants;
 }
 
+public  Map<String, List<Integer>> getRestaurantsByTime(String city) {
+    Map<String, List<Integer>> restaurants = new HashMap<>();
+    restaurants.put("breakfast", new ArrayList<>());
+    restaurants.put("dinner", new ArrayList<>());
+
+    String query = "SELECT restaurantId, time FROM Restaurants WHERE city = ?";
+    try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+        pstmt.setString(1, city);
+        ResultSet rs = pstmt.executeQuery();
+           while (rs.next()) {
+            int restaurantId = rs.getInt("restaurantId");
+            String bestTime = rs.getString("time");
+
+            // Categorize the activity based on time of day
+            if (bestTime.equalsIgnoreCase("breakfast")) {
+                restaurants.get("breakfast").add(restaurantId);
+            } else if (bestTime.equalsIgnoreCase("dinner")) {
+                restaurants.get("dinner").add(restaurantId);
+            }
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return restaurants;
+}
+
+
   public String getActivityNameById(int activityId) {
     String activityName = "";
     String query = "SELECT name FROM Activities WHERE activityId = ?";
@@ -268,6 +295,30 @@ public List<Day> createDailyItinerary(Map<String, List<Integer>> activitiesByTim
     return days;
 }
 
+
+public List<Day> createDailyItinerary2(Map<String, List<Integer>> activitiesByTime, Map<String, List<Integer>> restaurantsByTime, int travelDuration) {
+    List<Day> days = new ArrayList<>();
+    
+    for (int i = 1; i <= travelDuration; i++) {
+        Day day = new Day("Day " + i);
+
+        // Assign activities for each time of day
+        day.setMorningActivity(getNextActivity(activitiesByTime.get("morning")));
+        day.setEveningActivity(getNextActivity(activitiesByTime.get("afternoon")));
+        day.setNightActivity(getNextActivity(activitiesByTime.get("evening")));
+
+        
+         // Assign activities for each time of day
+        day.setRestaurantBreakfast(getNextRestaurant(restaurantsByTime.get("breakfast")));
+        day.setRestaurantDinner(getNextRestaurant(restaurantsByTime.get("dinner")));
+        
+
+
+        days.add(day);
+    }
+    return days;
+}
+
 // Helper method to get next activity from list and cycle through
 private Integer getNextActivity(List<Integer> activities) {
     if (!activities.isEmpty()) {
@@ -283,6 +334,9 @@ private Integer getNextRestaurant(List<Integer> restaurants) {
     }
     return null; // No more restaurants
 }
+
+
+
 
 //for presenting options
 public List<String> getActivityNamesByCityId(int cityId) {

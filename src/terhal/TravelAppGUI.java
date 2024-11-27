@@ -1,4 +1,3 @@
-
 package terhal;
 
 
@@ -12,6 +11,8 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -21,6 +22,7 @@ import java.util.HashMap;
 import java.util.UUID;
 import java.util.List;
 import java.util.Map;
+import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 
 public class TravelAppGUI extends JFrame {
@@ -571,7 +573,7 @@ private ImageIcon resizeImage(String imagePath, int width, int height) {
 
         // Retrieve activities and restaurants for the city
         Map<String, List<Integer>> activitiesByTime = travelPlan.getActivitiesByTime(city);
-        List<Integer> restaurants = travelPlan.getRestaurantsByCity(city);
+        Map<String, List<Integer>> restaurants  = travelPlan.getRestaurantsByTime(city);
 
         // Debugging output to verify correct data retrieval
         System.out.println("City: " + city);
@@ -579,7 +581,7 @@ private ImageIcon resizeImage(String imagePath, int width, int height) {
         System.out.println("Restaurants: " + restaurants);
 
         // Create the daily itinerary for the city
-        List<Day> itinerary = travelPlan.createDailyItinerary(activitiesByTime, restaurants, travelDuration);
+        List<Day> itinerary = travelPlan.createDailyItinerary2(activitiesByTime, restaurants, travelDuration);
 
         List<DailyPlan> dailyPlans = new ArrayList<>();
         for (Day day : itinerary) {
@@ -682,70 +684,194 @@ public class DailyPlan {
     public String getDayName() {
         return day;
     }
+public void showDetails() {
+    if (mainFrame != null) {
+        mainFrame.dispose();
+    }
+    mainFrame = new JFrame(day + " Plan in " + city);
+    mainFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+    mainFrame.setSize(600, 800);
+    mainFrame.setLayout(new BorderLayout());
+    mainFrame.getContentPane().setBackground(new Color(240, 255, 240));
 
-    public void showDetails() {
-        if (mainFrame != null) {
-            mainFrame.dispose();
+    JLabel headerLabel = new JLabel("Plan for " + day + " in " + city, JLabel.CENTER);
+    headerLabel.setFont(new Font("Arial", Font.BOLD, 28));
+    headerLabel.setForeground(new Color(34, 139, 34));
+    headerLabel.setBorder(BorderFactory.createEmptyBorder(15, 10, 15, 10));
+
+    mainFrame.add(headerLabel, BorderLayout.NORTH);
+
+    JPanel detailsPanel = new JPanel(new GridLayout(0, 1, 10, 10));
+    detailsPanel.setBackground(new Color(240, 255, 240));
+    detailsPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+    addActivityOrRestaurantDetails(detailsPanel, "Morning Activity", morningActivity);
+    addActivityOrRestaurantDetails(detailsPanel, "Afternoon Activity", afternoonActivity);
+    addActivityOrRestaurantDetails(detailsPanel, "Night Activity", nightActivity);
+    addActivityOrRestaurantDetails(detailsPanel, "Breakfast Restaurant", breakfastRestaurant);
+    addActivityOrRestaurantDetails(detailsPanel, "Dinner Restaurant", dinnerRestaurant);
+
+    JScrollPane scrollPane = new JScrollPane(detailsPanel);
+    scrollPane.setBorder(BorderFactory.createEmptyBorder());
+
+    JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+    buttonPanel.setBackground(new Color(240, 255, 240));
+
+    JButton editButton = new JButton("Edit Plan");
+    JButton saveButton = new JButton("Save Plan");
+    JButton backButton = new JButton("Back");
+
+    styleButton(editButton);
+    styleButton(saveButton);
+    styleButton(backButton);
+
+    editButton.addActionListener(e -> showEditDialog());
+    saveButton.addActionListener(e -> savePlanToFile());
+    backButton.addActionListener(e -> {
+        mainFrame.dispose();
+        parentFrame.setVisible(true);
+    });
+
+    buttonPanel.add(editButton);
+    buttonPanel.add(saveButton);
+    buttonPanel.add(backButton);
+
+    mainFrame.add(scrollPane, BorderLayout.CENTER);
+    mainFrame.add(buttonPanel, BorderLayout.SOUTH);
+    mainFrame.setVisible(true);
+}
+
+private void addActivityOrRestaurantDetails(JPanel detailsPanel, String label, Integer id) {
+    if (id != null) {
+        String name = travelPlan.isActivityId(id) ? travelPlan.getActivityNameById(id) : travelPlan.getRestaurantNameById(id);
+
+        // Label with formatted text
+        JLabel nameLabel = new JLabel("<html><b>" + label + ":</b> " + name + "</html>", JLabel.CENTER);
+        nameLabel.setFont(new Font("Arial", Font.PLAIN, 22));
+        nameLabel.setForeground(new Color(0, 100, 0));
+
+        // Centered image
+        JLabel imageLabel = travelPlan.isActivityId(id) ? getImageLabelByActivityId(id) : getImageLabelByRestaurantId(id);
+        imageLabel.setHorizontalAlignment(JLabel.CENTER);
+
+        // Slimmer "View Details" button
+        JButton detailsButton = new JButton("View Details");
+        detailsButton.setPreferredSize(new Dimension(150, 30)); // Adjusting size for a slimmer look
+        styleButton(detailsButton);
+        detailsButton.addActionListener(e -> showDetailsDialog(id));
+
+        detailsPanel.add(nameLabel);
+        detailsPanel.add(imageLabel);
+        JPanel buttonWrapper = new JPanel();
+        buttonWrapper.setBackground(new Color(240, 255, 240));
+        buttonWrapper.add(detailsButton);
+        detailsPanel.add(buttonWrapper);
+    } else {
+        JLabel nameLabel = new JLabel(label + ": None", JLabel.CENTER);
+        nameLabel.setFont(new Font("Arial", Font.PLAIN, 22));
+        nameLabel.setForeground(Color.GRAY);
+        detailsPanel.add(nameLabel);
+    }
+}
+
+private JLabel getImageLabelByActivityId(int activityId) {
+    String imagePath = getImagePathByActivityId(activityId);
+    JLabel imageLabel = new JLabel();
+
+    if (imagePath != null && !imagePath.isEmpty()) {
+        try {
+            URL url = new URL(imagePath);
+            ImageIcon imageIcon = new ImageIcon(url);
+            Image img = imageIcon.getImage().getScaledInstance(300, 200, Image.SCALE_SMOOTH);
+            imageLabel.setIcon(new ImageIcon(img));
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+            imageLabel.setText("Image not available");
         }
-        mainFrame = new JFrame(day + " Plan in " + city);
-        mainFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        mainFrame.setSize(520, 700);
-        mainFrame.setLayout(new BorderLayout());
-        mainFrame.getContentPane().setBackground(new Color(220, 255, 220));
-        
-        JLabel headerLabel = new JLabel("Plan for " + day + " in " + city);
-        headerLabel.setFont(new Font("Times New Roman", Font.BOLD, 24));
-        headerLabel.setForeground(new Color(34, 139, 34));
-        headerLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        headerLabel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        
-        mainFrame.add(headerLabel, BorderLayout.NORTH);
-
-        JPanel detailsPanel = new JPanel(new GridLayout(5, 1));
-        detailsPanel.setBackground(new Color(220, 255, 220));
-        detailsPanel.add(new JLabel("Morning Activity: " + getActivityName(morningActivity)));
-        detailsPanel.add(new JLabel("Afternoon Activity: " + getActivityName(afternoonActivity)));
-        detailsPanel.add(new JLabel("Night Activity: " + getActivityName(nightActivity)));
-        detailsPanel.add(new JLabel("Breakfast Restaurant: " + getRestaurantName(breakfastRestaurant)));
-        detailsPanel.add(new JLabel("Dinner Restaurant: " + getRestaurantName(dinnerRestaurant)));
-
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 5));
-        buttonPanel.setBackground(new Color(220, 255, 220));
-        JButton editButton = new JButton("Edit Plan");
-        JButton saveButton = new JButton("Save Plan");
-        JButton backButton = new JButton("Back");
-        
-        styleButton(editButton);
-        styleButton(saveButton);
-        styleButton(backButton);
-
-        editButton.addActionListener(e -> showEditDialog());
-        saveButton.addActionListener(e -> savePlanToFile());
-        backButton.addActionListener(e -> {
-            mainFrame.dispose();
-            parentFrame.setVisible(true);
-        });
-
-        buttonPanel.add(editButton);
-        buttonPanel.add(saveButton);
-        buttonPanel.add(backButton);
-
-        // Add buttons for more activity and restaurant details
-        JPanel detailsButtonPanel = new JPanel(new GridLayout(5, 2));
-        detailsButtonPanel.setBackground(new Color(220, 255, 220));
-        addDetailsButton(detailsButtonPanel, "Morning Activity Details", morningActivity);
-        addDetailsButton(detailsButtonPanel, "Afternoon Activity Details", afternoonActivity);
-        addDetailsButton(detailsButtonPanel, "Night Activity Details", nightActivity);
-        addDetailsButton(detailsButtonPanel, "Breakfast Restaurant Details", breakfastRestaurant);
-        addDetailsButton(detailsButtonPanel, "Dinner Restaurant Details", dinnerRestaurant);
-
-        mainFrame.add(detailsPanel, BorderLayout.CENTER);
-        mainFrame.add(detailsButtonPanel, BorderLayout.SOUTH);
-        mainFrame.add(buttonPanel, BorderLayout.NORTH);
-
-        mainFrame.setVisible(true);
+    } else {
+        imageLabel.setText("Image not available");
+        imageLabel.setFont(new Font("Arial", Font.ITALIC, 16));
+        imageLabel.setForeground(Color.GRAY);
     }
 
+    return imageLabel;
+}
+
+private JLabel getImageLabelByRestaurantId(int restaurantId) {
+    String imagePath = getRestaurantImagePathById(restaurantId);
+    JLabel imageLabel = new JLabel();
+
+    if (imagePath != null && !imagePath.isEmpty()) {
+        try {
+            URL url = new URL(imagePath);
+            ImageIcon imageIcon = new ImageIcon(url);
+            Image img = imageIcon.getImage().getScaledInstance(300, 200, Image.SCALE_SMOOTH);
+            imageLabel.setIcon(new ImageIcon(img));
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+            imageLabel.setText("Image not available");
+        }
+    } else {
+        imageLabel.setText("Image not available");
+        imageLabel.setFont(new Font("Arial", Font.ITALIC, 16));
+        imageLabel.setForeground(Color.GRAY);
+    }
+
+    return imageLabel;
+}
+
+
+public String getImagePathByActivityId(int activityId) {
+    String query = "SELECT image_path FROM activities WHERE activityId = ?";
+    String imagePath = null;
+
+    try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+        pstmt.setInt(1, activityId);
+        ResultSet rs = pstmt.executeQuery();
+
+        if (rs.next()) {
+            imagePath = rs.getString("image_path");
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+        JOptionPane.showMessageDialog(null, "Error retrieving image path for activity: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+    }
+
+    return imagePath;
+}
+
+
+public String getRestaurantImagePathById(int RestaurantId) {
+    String query = "SELECT image_url FROM Restaurants WHERE RestaurantId = ?";
+    String imagePath = null;
+
+    try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+        pstmt.setInt(1, RestaurantId);
+        ResultSet rs = pstmt.executeQuery();
+
+        if (rs.next()) {
+            imagePath = rs.getString("image_url");
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+        JOptionPane.showMessageDialog(null, "Error retrieving image path for resturant: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+    }
+
+    return imagePath;
+}
+
+
+
+
+private ImageIcon resizeImage(String imagePath, int width, int height) {
+    ImageIcon icon = new ImageIcon(imagePath);
+    if (icon.getIconWidth() == -1) return null;
+    Image img = icon.getImage();
+    Image newImg = img.getScaledInstance(width, height, Image.SCALE_SMOOTH);
+    return new ImageIcon(newImg);
+}
+
+       
     private void addDetailsButton(JPanel panel, String buttonText, Integer id) {
         if (id != null) {
             JButton detailsButton = new JButton(buttonText);
