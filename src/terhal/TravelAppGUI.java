@@ -68,7 +68,7 @@ public class TravelAppGUI extends JFrame {
         frame.add(welcomeLabel, BorderLayout.NORTH);
 
         // إضافة JLabel للصورة
-        ImageIcon originalIcon = new ImageIcon("C:\\Users\\pc\\Downloads\\d5210dc22bac2d626247c57b324ab1e6.jpg"); // استبدل بمسار الصورة الخاص بك
+        ImageIcon originalIcon = new ImageIcon("src/welcome.jpg"); // استبدل بمسار الصورة الخاص بك
         Image scaledImage = originalIcon.getImage().getScaledInstance(520, 350, Image.SCALE_SMOOTH); // تغيير الحجم
         JLabel imageLabel = new JLabel(new ImageIcon(scaledImage)); // إنشاء JLabel بالصورة المعدلة
         imageLabel.setHorizontalAlignment(SwingConstants.CENTER); // محاذاة الصورة في المنتصف

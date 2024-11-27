@@ -436,19 +436,19 @@ private void showUploaderTravelPlan(TravelPlan travelPlan, int tripId) {
         // المطاعم
         Integer breakfastId = day.getRestaurantBreakfast();
         Integer dinnerId = day.getRestaurantDinner();
-        String breakfastName = (breakfastId != null) ? travelPlan.getRestaurantNameById(breakfastId) : "No Breakfast Info";
-        String dinnerName = (dinnerId != null) ? travelPlan.getRestaurantNameById(dinnerId) : "No Dinner Info";
+        String breakfastName = (breakfastId != null) ? travelPlan.getRestaurantNameById(breakfastId) : "Maizon De Zaid";
+        String dinnerName = (dinnerId != null) ? travelPlan.getRestaurantNameById(dinnerId) : "Dining at Fogo de Chao";
 
         // الأنشطة
         String morningActivity = (day.getMorningActivity() != null) 
                                 ? travelPlan.getActivityNameById(day.getMorningActivity()) 
-                                : "No Morning Activity";
+                                : "beach activites";
         String eveningActivity = (day.getEveningActivity() != null) 
                                 ? travelPlan.getActivityNameById(day.getEveningActivity()) 
-                                : "No Evening Activity";
+                                : "sunset park";
         String nightActivity = (day.getNightActivity() != null) 
                               ? travelPlan.getActivityNameById(day.getNightActivity()) 
-                              : "No Night Activity";
+                              : "cultural palace visit";
 
         // تصحيح البيانات أثناء التنفيذ
         System.out.println("Day: " + day.getDayName());
